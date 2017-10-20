@@ -69,7 +69,7 @@ struct Value{
 
 enum PredicateType{
   PT_EQUALS,
-  PT_GREATERTHAN,
+  PT_GREATERTHAN, // LESS
 };
 
 struct Predicate{
@@ -94,6 +94,21 @@ struct Predicate{
   }
   Predicate(){}
   ~Predicate(){}
+
+  bool apply(Value& v) {
+      if(v.vtype != vtype) {
+          return false;
+      }
+
+      switch(ptype) {
+      case PT_EQUALS:
+          return vtype == VT_INT ? vint == v.vint : vstr == v.vstr;
+      case PT_GREATERTHAN:
+          return vtype == VT_INT ? vint < v.vint : vstr < v.vstr;
+      }
+
+      return false;
+  }
 };
 
 inline std::ostream& operator<<(std::ostream& stream, const Predicate& p){

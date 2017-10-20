@@ -40,6 +40,24 @@ class LAbstractNode{
     std::vector<std::vector<std::string>> fieldNames;
     std::vector<ValueType> fieldTypes;
     std::vector<COLUMN_SORT> fieldOrders;
+
+    // find the first occurence of either of the two strings
+    std::ptrdiff_t find_pos(string s1, string s2) {
+        for (int i = 0; i < fieldNames.size(); i++){
+            std::ptrdiff_t pos1 = std::find(fieldNames[i].begin(), fieldNames[i].end(), s1) - fieldNames[i].begin();
+            std::ptrdiff_t pos2 = std::find(fieldNames[i].begin(), fieldNames[i].end(), s2) - fieldNames[i].begin();
+
+            if(pos1 <= fieldNames.size() || pos2 <= fieldNames.size()){
+                return i;
+            }
+        }
+    }
+
+    bool contains_str(int attr, string s) {
+        return std::find(fieldNames[attr].begin(), fieldNames[attr].end(), s)
+                < fieldNames[attr].end();
+    }
+
   protected:
     LAbstractNode* left;
     LAbstractNode* rigth;
@@ -55,7 +73,7 @@ class LJoinNode : public LAbstractNode{
   public:
     // offsets are defined as "TableName.AttributeName" so, ensure there is no duplicates
     LJoinNode(LAbstractNode* left, LAbstractNode* right, std::string offset1, std::string offset2, int memorylimit);
-    ~LJoinNode();
+    ~LJoinNode();   
     // attributes to perform equi-join on
     std::string offset1, offset2;
     // maximum number of records permitted to present inside physical node

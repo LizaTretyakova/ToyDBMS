@@ -56,17 +56,28 @@ void PSelectNode::Initialize(){
       std::vector<Value> tmp;
       std::istringstream iss(line, std::istringstream::in);
       int i = 0;
-      while (iss >> word){
-        // Yeah, no predicates :) -- Homework
+      bool passes_pred = true;
+
+      while (passes_pred && iss >> word){
         Value h;
-        if (prototype->fieldTypes[i] == VT_INT)
+        if (prototype->fieldTypes[i] == VT_INT) {
           h = Value(std::stoi(word));
-        else
+        } else {
           h = Value(word);
+        }
+
+        for(int j = 0; j < predicate.size() && will_add; ++j) {
+            if(predicate[j].attribute == i) {
+                passes_pred &= predicate.apply(h);
+            }
+        }
+
         tmp.push_back(h);
         i++;
       }
-      data.push_back(tmp);
+      if(passes_pred) {
+        data.push_back(tmp);
+      }
     }
     f.close();
   } else std::cout << "Unable to open file";
@@ -81,8 +92,9 @@ void PSelectNode::Print(int indent){
     std::cout<<" ";
   }
   std::cout<<"SCAN "<<table.relpath<<" with predicate ";
-  if(predicate.size() != 0)
-    std::cout<<predicate[0];
+  if(predicate.size() != 0) // TODO: output only the first pred instead of all
+    for (int i = 0; i < predicate.size(); ++i)
+        std::cout<<predicate[i];
   else
     std::cout<<"NULL"<<std::endl;
   if(left != NULL) left->Print(indent + 2);
