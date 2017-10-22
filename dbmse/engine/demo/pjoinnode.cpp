@@ -51,32 +51,6 @@ void PJoinNode::Initialize(){
   std::ptrdiff_t lpos = lp->find_pos(((LJoinNode*)prototype)->offset1, ((LJoinNode*)prototype)->offset2);
   std::ptrdiff_t rpos = rp->find_pos(((LJoinNode*)prototype)->offset1, ((LJoinNode*)prototype)->offset2);
 
-//  for (int i = 0; i < lp->fieldNames.size(); i++){
-//    std::ptrdiff_t lpos1 = std::find(ln[i].begin(), ln[i].end(), ((LJoinNode*)prototype)->offset1) - ln[i].begin();
-//    std::ptrdiff_t lpos2 = std::find(ln[i].begin(), ln[i].end(), ((LJoinNode*)prototype)->offset2) - ln[i].begin();
-
-//    if(lpos1 <= ln.size() || lpos1 <= ln.size()){
-//      if (lpos1 < lpos2)
-//        lpos = lpos1; // lpos = i
-//      else
-//        lpos = lpos2;
-//      break;
-//    }
-//  }
-
-//  for (int i = 0; i < rp->fieldNames.size(); i++){ // TODO extract
-//    std::ptrdiff_t rpos1 = std::find(rn[i].begin(), rn[i].end(), ((LJoinNode*)prototype)->offset1) - rn[i].begin();
-//    std::ptrdiff_t rpos2 = std::find(rn[i].begin(), rn[i].end(), ((LJoinNode*)prototype)->offset2) - rn[i].begin();
-
-//    if(rpos1 <= rn.size() || rpos1 <= rn.size()){
-//      if (rpos1 < rpos2)
-//        rpos = rpos1; // rpos = i
-//      else
-//        rpos = rpos2;
-//      break;
-//    }
-//  }
-
   ValueType vt = lp->fieldTypes[lpos];
 
   for (int i = 0; i < lres.size(); i++)

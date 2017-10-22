@@ -17,6 +17,7 @@
 //      3) contract contains print methods for physical and logical nodes
 // 0.2: first public release
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -28,6 +29,21 @@
 #include "pselectnode.h"
 
 PSelectNode::PSelectNode(){}
+
+PSelectNode::PSelectNode(LAbstractNode* p): PGetNextNode() {
+    this->table = ((LSelectNode*)p)->GetBaseTable();
+
+    std::tuple<int, Predicate> tmp_p = ((LSelectNode*)p)->GetNextPredicate();
+    while(std::get<0>(tmp_p) != 1) {
+        this->predicate.push_back(std::get<1>(tmp_p));
+        tmp_p = ((LSelectNode*)p)->GetNextPredicate();
+    }
+
+    this->prototype = p;
+    pos = 0;
+    data.clear();
+    Initialize();
+}
 
 PSelectNode::PSelectNode(LAbstractNode* p, std::vector<Predicate> predicate): PGetNextNode(){
   this->table = ((LSelectNode*)p)->GetBaseTable();
@@ -42,7 +58,6 @@ PSelectNode::~PSelectNode(){
 }
 
 void PSelectNode::Initialize(){
-  int val = 0;
   std::string line, word;
   std::ifstream f(table.relpath);
   if(f.is_open()){
@@ -66,9 +81,9 @@ void PSelectNode::Initialize(){
           h = Value(word);
         }
 
-        for(int j = 0; j < predicate.size() && will_add; ++j) {
+        for(int j = 0; j < predicate.size() && passes_pred; ++j) {
             if(predicate[j].attribute == i) {
-                passes_pred &= predicate.apply(h);
+                passes_pred &= predicate[j].apply(h);
             }
         }
 
@@ -88,16 +103,20 @@ std::vector<std::vector<Value>> PSelectNode::GetNext(){
 }
 
 void PSelectNode::Print(int indent){
-  for (int i = 0; i < indent; i++){
-    std::cout<<" ";
-  }
-  std::cout<<"SCAN "<<table.relpath<<" with predicate ";
-  if(predicate.size() != 0) // TODO: output only the first pred instead of all
-    for (int i = 0; i < predicate.size(); ++i)
-        std::cout<<predicate[i];
-  else
-    std::cout<<"NULL"<<std::endl;
-  if(left != NULL) left->Print(indent + 2);
-  if(right != NULL) right->Print(indent + 2);
+    for (int i = 0; i < indent; i++){
+        std::cout << " ";
+    }
+    std::cout<<"SCAN "<<table.relpath<<" with predicate ";
+    if(predicate.size() != 0) {// TODO: output only the first pred instead of all
+        for (int i = 0; i < predicate.size(); ++i) {
+            if (i > 0) {
+                std::cout << " and ";
+            }
+            std::cout << predicate[i];
+        }
+    } else {
+        std::cout << "NULL";
+    }
+    std::cout << std::endl;
 }
 

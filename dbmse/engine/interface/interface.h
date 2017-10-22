@@ -19,6 +19,8 @@
 
 #ifndef INTERFACE_H
 #define INTERFACE_H
+
+#include <algorithm>
 #include <string.h>
 #include <vector>
 #include <string>
@@ -42,7 +44,7 @@ class LAbstractNode{
     std::vector<COLUMN_SORT> fieldOrders;
 
     // find the first occurence of either of the two strings
-    std::ptrdiff_t find_pos(string s1, string s2) {
+    std::ptrdiff_t find_pos(std::string s1, std::string s2) {
         for (int i = 0; i < fieldNames.size(); i++){
             std::ptrdiff_t pos1 = std::find(fieldNames[i].begin(), fieldNames[i].end(), s1) - fieldNames[i].begin();
             std::ptrdiff_t pos2 = std::find(fieldNames[i].begin(), fieldNames[i].end(), s2) - fieldNames[i].begin();
@@ -53,14 +55,22 @@ class LAbstractNode{
         }
     }
 
-    bool contains_str(int attr, string s) {
+    bool contains_str(int attr, std::string s) {
         return std::find(fieldNames[attr].begin(), fieldNames[attr].end(), s)
                 < fieldNames[attr].end();
     }
 
+    bool contains_str(std::string s) {
+        bool contains = false;
+        for(int i = 0; i < fieldNames.size() && !contains; ++i) {
+            contains |= contains_str(i, s);
+        }
+        return contains;
+    }
+
   protected:
     LAbstractNode* left;
-    LAbstractNode* rigth;
+    LAbstractNode* right;
 };
 
 class LCrossProductNode : public LAbstractNode{

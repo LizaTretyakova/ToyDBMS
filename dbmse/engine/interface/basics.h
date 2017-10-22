@@ -95,6 +95,28 @@ struct Predicate{
   Predicate(){}
   ~Predicate(){}
 
+  void debug_print(Value& v) {
+      std::cerr << "[APPLY ";
+      if(vtype == VT_INT) {
+          std::cerr << " " << v.vint;
+          if(ptype == PT_EQUALS) {
+              std::cerr << " == ";
+          } else {
+              std::cerr << " < ";
+          }
+          std::cerr << vint;
+      } else {
+          std::cerr << " " << v.vstr;
+          if(ptype == PT_EQUALS) {
+              std::cerr << " == ";
+          } else {
+              std::cerr << " < ";
+          }
+          std::cerr << vstr;
+      }
+      std::cerr << "]" << std::endl;
+  }
+
   bool apply(Value& v) {
       if(v.vtype != vtype) {
           return false;
@@ -102,9 +124,9 @@ struct Predicate{
 
       switch(ptype) {
       case PT_EQUALS:
-          return vtype == VT_INT ? vint == v.vint : vstr == v.vstr;
+          return vtype == VT_INT ? v.vint == vint : v.vstr == vstr;
       case PT_GREATERTHAN:
-          return vtype == VT_INT ? vint < v.vint : vstr < v.vstr;
+          return vtype == VT_INT ? v.vint < vint : v.vstr < vstr;
       }
 
       return false;

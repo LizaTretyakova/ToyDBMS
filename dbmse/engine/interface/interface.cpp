@@ -24,7 +24,7 @@
 
 LAbstractNode::LAbstractNode(LAbstractNode* left, LAbstractNode* right){
   this->left = left;
-  this->rigth = right;
+  this->right = right;
 }
 
 LAbstractNode::~LAbstractNode(){
@@ -35,7 +35,7 @@ LAbstractNode* LAbstractNode::GetLeft(){
 }
 
 LAbstractNode* LAbstractNode::GetRight(){
-  return rigth;
+  return right;
 }
 
 LJoinNode::LJoinNode(LAbstractNode* left, LAbstractNode* right,
@@ -44,59 +44,32 @@ LJoinNode::LJoinNode(LAbstractNode* left, LAbstractNode* right,
   this->offset2 = offset2;
   this->memorylimit = memorylimit;
 
-  // TODO: disgusting, fix this
   std::vector<std::string> match;
   ValueType vt;
   COLUMN_SORT cs;
   for (int i = 0; i < left->fieldNames.size(); i++){
     for (int j = 0; j < right->fieldNames.size(); j++){
-//      std::vector<std::string> l = left->fieldNames[i];
-//      std::vector<std::string> r = right->fieldNames[j];
-
       if((left->contains_str(i, offset1) &&
           right->contains_str(j, offset2))
               || (left->contains_str(i, offset2) &&
                   right->contains_str(j, offset1))) {
-        match = l;
-        match.insert(std::end(match), std::begin(r), std::end(r));
+        match = left->fieldNames[i];
+        match.insert(std::end(match),
+                     std::begin(right->fieldNames[j]),
+                     std::end(right->fieldNames[j]));
         vt = left->fieldTypes[i];
         cs = left->fieldOrders[i];
       }
-//      if(std::find(l.begin(), l.end(), offset1) != l.end()){
-//        if(std::find(r.begin(), r.end(), offset2) != r.end()){
-//          match = l;
-//          match.insert(std::end(match), std::begin(r), std::end(r));
-//          vt = left->fieldTypes[i];
-//          cs = left->fieldOrders[i];
-//        }
-//      } else
-//      if(std::find(l.begin(), l.end(), offset2) != l.end()){
-//        if(std::find(r.begin(), r.end(), offset1) != r.end()){
-//          match = l;
-//          match.insert(std::end(match), std::begin(r), std::end(r));
-//          vt = left->fieldTypes[i];
-//          cs = left->fieldOrders[i];
-//        }
-//      }
     }
   }
 
   for (int i = 0; i < left->fieldNames.size(); i++){
-    if(!left->contains_str(i, offset1) && !right->contains_str(i, offset2)) {
+    if(!left->contains_str(i, offset1) && !left->contains_str(i, offset2)) {
       fieldNames.push_back(left->fieldNames[i]);
       fieldTypes.push_back(left->fieldTypes[i]);
       fieldOrders.push_back(left->fieldOrders[i]);
     }
   }
-//  for (int i = 0; i < left->fieldNames.size(); i++){
-//    std::vector<std::string> l = left->fieldNames[i];
-//    if(std::find(l.begin(), l.end(), offset1) == l.end())
-//      if(std::find(l.begin(), l.end(), offset2) == l.end()){
-//        fieldNames.push_back(l);
-//        fieldTypes.push_back(left->fieldTypes[i]);
-//        fieldOrders.push_back(left->fieldOrders[i]);
-//      }
-//  }
 
   for (int i = 0; i < right->fieldNames.size(); i++){
     if(!right->contains_str(i, offset1) && !right->contains_str(i, offset2)) {
@@ -105,15 +78,6 @@ LJoinNode::LJoinNode(LAbstractNode* left, LAbstractNode* right,
       fieldOrders.push_back(right->fieldOrders[i]);
     }
   }
-//  for (int i = 0; i < right->fieldNames.size(); i++){
-//    std::vector<std::string> r = right->fieldNames[i];
-//    if(std::find(r.begin(), r.end(), offset1) == r.end())
-//      if(std::find(r.begin(), r.end(), offset2) == r.end()){
-//        fieldNames.push_back(r);
-//        fieldTypes.push_back(right->fieldTypes[i]);
-//        fieldOrders.push_back(right->fieldOrders[i]);
-//      }
-//  }
 
   fieldNames.push_back(match);
   fieldTypes.push_back(vt);
@@ -123,7 +87,33 @@ LJoinNode::LJoinNode(LAbstractNode* left, LAbstractNode* right,
 
 LJoinNode::~LJoinNode(){
   delete left;
-  delete rigth;
+  delete right;
+}
+
+LCrossProductNode::LCrossProductNode(LAbstractNode* l, LAbstractNode* r): LAbstractNode(l, r) {
+    fieldNames.insert(std::end(fieldNames),
+                      std::begin(left->fieldNames),
+                      std::end(left->fieldNames));
+    fieldNames.insert(std::end(fieldNames),
+                      std::begin(right->fieldNames),
+                      std::end(right->fieldNames));
+    fieldTypes.insert(std::end(fieldTypes),
+                      std::begin(left->fieldTypes),
+                      std::end(left->fieldTypes));
+    fieldTypes.insert(std::end(fieldTypes),
+                      std::begin(right->fieldTypes),
+                      std::end(right->fieldTypes));
+    fieldOrders.insert(std::end(fieldOrders),
+                       std::begin(left->fieldOrders),
+                       std::end(left->fieldOrders));
+    fieldOrders.insert(std::end(fieldOrders),
+                       std::begin(right->fieldOrders),
+                       std::end(right->fieldOrders));
+}
+
+LCrossProductNode::~LCrossProductNode() {
+    delete left;
+    delete right;
 }
 
 LProjectNode::LProjectNode(LAbstractNode* child, std::vector<std::string> tokeep):LAbstractNode(child, NULL){

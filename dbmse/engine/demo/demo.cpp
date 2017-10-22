@@ -26,31 +26,29 @@
 #include "../interface/basics.h"
 #include "pselectnode.h"
 #include "pjoinnode.h"
+#include "pcrossproductnode.h"
+#include "pprojectnode.h"
 
 // Here be rewriter and optimizer
 PResultNode* QueryFactory(LAbstractNode* node){
-  // As of now, we handle only SELECTs with 0 predicates
-  // Implementing conjunctive predicates is your homework
-  if(dynamic_cast<LSelectNode*>(node) != NULL){
-    LSelectNode* tmp = (LSelectNode*)node;
-    std::vector<Predicate> p;
-    return new PSelectNode(tmp, p);
-  }else
-  // Also, only one join is possible
-  // Supporting more joins is also your (future) homework
-    if(dynamic_cast<LJoinNode*>(node) != NULL){
+    if (dynamic_cast<LSelectNode*>(node) != NULL){
+        return new PSelectNode((LSelectNode*)node);
+    } else if (dynamic_cast<LJoinNode*>(node) != NULL){
+        PGetNextNode* lres = (PGetNextNode*)QueryFactory(node->GetLeft());
+        PGetNextNode* rres = (PGetNextNode*)QueryFactory(node->GetRight());
 
-      LSelectNode* tmp = (LSelectNode*)(node->GetRight());
-      std::vector<Predicate> p;
-      PSelectNode* rres = new PSelectNode(tmp, p);
+        return new PJoinNode(lres, rres, node);
+    } else if (dynamic_cast<LCrossProductNode*>(node) != NULL) {
+        PGetNextNode* lres = (PGetNextNode*)QueryFactory(node->GetLeft());
+        PGetNextNode* rres = (PGetNextNode*)QueryFactory(node->GetRight());
 
-      LSelectNode* tmp2 = (LSelectNode*)(node->GetLeft());
-      PSelectNode* lres = new PSelectNode(tmp2, p);
+        return new PCrossProductNode(lres, rres, node);
+    } else if (dynamic_cast<LProjectNode*>(node) != NULL) {
+        PGetNextNode* cres = (PGetNextNode*)QueryFactory(node->GetLeft());
 
-      return new PJoinNode(lres, rres, node);
-  }else
-  return NULL;
-
+        return new PProjectNode(cres, node);
+    }
+    return NULL;
 }
 
 void ExecuteQuery(PResultNode* query){
@@ -73,34 +71,102 @@ void ExecuteQuery(PResultNode* query){
 
 }
 
+void test_it_with_fire(LAbstractNode* n, std::string s) {
+    std::cout << std::endl << s << std::endl;
+    PResultNode* q = QueryFactory(n);
+    q->Print(0);
+    ExecuteQuery(q);
+    delete q;
+}
+
 int main(){
-  {
     std::cout << "Starting demo" << std::endl;
-    std::cout << "Query1: plain select" << std::endl;
-    BaseTable bt1 = BaseTable("table1");
-    std::cout << bt1;
-    LAbstractNode* n1 = new LSelectNode(bt1, {});
-    PResultNode* q1 = QueryFactory(n1);
-    q1->Print(0);
-    ExecuteQuery(q1);
-    delete n1;
-    delete q1;
-  }
 
-  {
-    std::cout << std::endl << "Query2: simple equi-join" << std::endl;
-    BaseTable bt1 = BaseTable("table1");
-    BaseTable bt2 = BaseTable("table2");
-    std::cout << bt1;
-    std::cout << bt2;
-    LAbstractNode* n1 = new LSelectNode(bt1, {});
-    LAbstractNode* n2 = new LSelectNode(bt2, {});
-    LJoinNode* n3 = new LJoinNode(n1, n2, "table1.id", "table2.id2", 666);
-    PResultNode* q1 = QueryFactory(n3);
-    q1->Print(0);
-    ExecuteQuery(q1);
-    delete n3;
-    delete q1;
-  }
+    {
+        BaseTable bt1 = BaseTable("table1");
+        std::cout << bt1;
+        Predicate p1(PT_EQUALS, VT_INT, 3, 4, "");
+        Predicate p2(PT_GREATERTHAN, VT_INT, 0, 3, "");
+        LAbstractNode* n1 = new LSelectNode(bt1, {p1, p2});
+        test_it_with_fire(n1, "SELECT * WHERE groups == 4 AND id < 3");
+        delete n1;
+    }
 
+    {
+        BaseTable bt1 = BaseTable("table1");
+        BaseTable bt2 = BaseTable("table2");
+        std::cout << bt1;
+        std::cout << bt2;
+        LAbstractNode* n1 = new LSelectNode(bt1, {});
+        LAbstractNode* n2 = new LSelectNode(bt2, {});
+        LJoinNode* n3 = new LJoinNode(n1, n2, "table1.id", "table2.id2", 666);
+        PResultNode* q1 = QueryFactory(n3);
+        q1->Print(0);
+        ExecuteQuery(q1);
+        delete n3;
+        delete q1;
+    }
+
+    {
+        BaseTable bt1 = BaseTable("table1");
+        LAbstractNode* n1 = new LSelectNode(bt1, {});
+        LAbstractNode* n2 = new LProjectNode(n1, {"table1.id", "table1.frequency"});
+        test_it_with_fire(n2, "SELECT id, frequency FROM table1");
+        delete n2;
+    }
+
+    {
+        BaseTable bt1 = BaseTable("table1");
+        BaseTable bt2 = BaseTable("table2");
+
+        LAbstractNode* select1 = new LSelectNode(bt1, {});
+        LAbstractNode* select2 = new LSelectNode(bt2, {});
+        LAbstractNode* crossp = new LCrossProductNode(select1, select2);
+        LAbstractNode* proj = new LProjectNode(crossp, {"table1.id", "table2.id2", "table2.type2"});
+
+        test_it_with_fire(proj,
+            "(SELECT id FROM table1) x (SELECT id2 FROM table2)");
+        delete proj;
+    }
+
+    {
+        BaseTable bt1 = BaseTable("table1");
+        BaseTable bt2 = BaseTable("table2");
+
+        Predicate p1(PT_GREATERTHAN, VT_INT, 0, 5, "");
+        Predicate p2(PT_GREATERTHAN, VT_STRING, 1, 0, "three");
+
+        LAbstractNode* select1 = new LSelectNode(bt1, {p1});
+        LAbstractNode* select2 = new LSelectNode(bt2, {p2});
+        LAbstractNode* join = new LJoinNode(select1, select2, "table1.id", "table2.id2", 100500);
+        LAbstractNode* proj = new LProjectNode(join, {"table1.id", "table2.type2"});
+
+        test_it_with_fire(proj,
+            "SELECT id, id2, type2\n"
+            "FROM table1 JOIN table2\n"
+            "ON id == id2\n"
+            "WHERE id < 5 AND type2 < 'three'");
+        delete proj;
+    }
+
+    {
+        BaseTable bt1 = BaseTable("table1");
+        BaseTable bt2 = BaseTable("table2");
+
+        Predicate p1(PT_EQUALS, VT_INT, 3, 4, "");
+        Predicate p2(PT_GREATERTHAN, VT_INT, 0, 3, "");
+
+        LAbstractNode* select1 = new LSelectNode(bt1, {p1, p2});
+        LAbstractNode* select2 = new LSelectNode(bt2, {});
+        LAbstractNode* select3 = new LSelectNode(bt1, {});
+        LAbstractNode* crossp = new LCrossProductNode(select1, select2);
+        LAbstractNode* join = new LJoinNode(crossp, select3, "table1.id", "table1.id", 100500);
+
+        test_it_with_fire(join,
+            "(SELECT * FROM table1 WHERE groups == 4 AND id < 3)"
+            "\nx\n"
+            "(SELECT * FROM table2)\n"
+            "JOIN table1 ON id == id\n");
+        delete join;
+    }
 }
