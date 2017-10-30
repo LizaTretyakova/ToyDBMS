@@ -28,6 +28,7 @@
 #include "pjoinnode.h"
 #include "pcrossproductnode.h"
 #include "pprojectnode.h"
+#include "puniquenode.h"
 
 // Here be rewriter and optimizer
 PResultNode* QueryFactory(LAbstractNode* node){
@@ -47,6 +48,10 @@ PResultNode* QueryFactory(LAbstractNode* node){
         PGetNextNode* cres = (PGetNextNode*)QueryFactory(node->GetLeft());
 
         return new PProjectNode(cres, node);
+    } else if (dynamic_cast<LUniqueNode*>(node) != NULL) {
+        PGetNextNode* cres = (PGetNextNode*)QueryFactory(node->GetLeft());
+
+        return new PUniqueNode(cres, node);
     }
     return NULL;
 }
@@ -133,6 +138,21 @@ int main(){
         BaseTable bt1 = BaseTable("table1");
         BaseTable bt2 = BaseTable("table2");
 
+        LAbstractNode* select1 = new LSelectNode(bt1, {});
+        LAbstractNode* select2 = new LSelectNode(bt2, {});
+        LAbstractNode* crossp = new LCrossProductNode(select1, select2);
+        LAbstractNode* proj = new LProjectNode(crossp, {"table1.id", "table2.id2", "table2.type2"});
+        LAbstractNode* uniq = new LUniqueNode(proj);
+
+        test_it_with_fire(uniq,
+            "UNIQUE (SELECT id FROM table1) x (SELECT id2 FROM table2)");
+        delete uniq;
+    }
+
+    {
+        BaseTable bt1 = BaseTable("table1");
+        BaseTable bt2 = BaseTable("table2");
+
         Predicate p1(PT_GREATERTHAN, VT_INT, 0, 5, "");
         Predicate p2(PT_GREATERTHAN, VT_STRING, 1, 0, "three");
 
@@ -168,5 +188,28 @@ int main(){
             "(SELECT * FROM table2)\n"
             "JOIN table1 ON id == id\n");
         delete join;
+    }
+
+    {
+        BaseTable bt1 = BaseTable("table1");
+        BaseTable bt2 = BaseTable("table2");
+
+        Predicate p1(PT_EQUALS, VT_INT, 3, 4, "");
+        Predicate p2(PT_GREATERTHAN, VT_INT, 0, 3, "");
+
+        LAbstractNode* select1 = new LSelectNode(bt1, {p1, p2});
+        LAbstractNode* select2 = new LSelectNode(bt2, {});
+        LAbstractNode* select3 = new LSelectNode(bt1, {});
+        LAbstractNode* crossp = new LCrossProductNode(select1, select2);
+        LAbstractNode* join = new LJoinNode(crossp, select3, "table1.id", "table1.id", 100500);
+        LAbstractNode* proj = new LProjectNode(join, {"table1.description", "table1.frequency", "table1.groups"});
+        LAbstractNode* uniq = new LUniqueNode(proj);
+
+        test_it_with_fire(uniq,
+            "(SELECT * FROM table1 WHERE groups == 4 AND id < 3)"
+            "\nx\n"
+            "(SELECT * FROM table2)\n"
+            "JOIN table1 ON id == id\n");
+        delete uniq;
     }
 }

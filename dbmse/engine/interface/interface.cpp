@@ -170,6 +170,15 @@ LSelectNode::~LSelectNode(){
 }
 
 LUniqueNode::LUniqueNode(LAbstractNode* child):LAbstractNode(child, NULL){
+    fieldNames.insert(std::end(fieldNames),
+                      std::begin(child->fieldNames),
+                      std::end(child->fieldNames));
+    fieldTypes.insert(std::end(fieldTypes),
+                      std::begin(child->fieldTypes),
+                      std::end(child->fieldTypes));
+    fieldOrders.insert(std::end(fieldOrders),
+                       std::begin(child->fieldOrders),
+                       std::end(child->fieldOrders));
 }
 
 LUniqueNode::~LUniqueNode(){

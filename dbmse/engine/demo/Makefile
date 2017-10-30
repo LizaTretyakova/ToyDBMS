@@ -1,23 +1,32 @@
 CC=g++
 #CXXFLAGS=-std=c++11
 CXXFLAGS=-std=c++11 -g -O0
-SRC=../interface/interface.cpp pgetnextnode.cpp pselectnode.cpp pjoinnode.cpp demo.cpp pcrossproductnode.cpp pprojectnode.cpp
-OBJ=../interface/interface.o pgetnextnode.o pselectnode.o pjoinnode.o demo.o pcrossproductnode.o pprojectnode.o
 
-all: demo
+BINDIR=bin
+OBJDIR=obj
+
+SRC=../interface/interface.cpp pgetnextnode.cpp pselectnode.cpp pjoinnode.cpp demo.cpp pcrossproductnode.cpp pprojectnode.cpp puniquenode.cpp
+OBJ=$(SRC:.cpp=.o)
+
+all: $(BINDIR) $(OBJDIR) demo
 
 valgrind: demo
 	valgrind --leak-check=full --track-origins=yes ./demo
 
 demo: $(OBJ)
-	$(CC) $(OBJ) $(CXXFLAGS) -o $@
+	$(CC) $(addprefix $(OBJDIR)/, $(notdir $(OBJ))) $(CXXFLAGS) -o $(BINDIR)/$@
 
 %.o: %.cpp
-	$(CC) $(CXXFLAGS) -c $< -o $@
+	$(CC) $(CXXFLAGS) -c $< -o $(OBJDIR)/$(notdir $@)
+
+$(BINDIR):
+	mkdir -p bin
+
+$(OBJDIR):
+	mkdir -p obj
 
 .PHONY: clean
 
 clean:
-	rm -f demo
-	rm -f *.o
-	rm -f ../interface/*.o
+	rm -rfd $(BINDIR)
+	rm -rfd $(OBJDIR)
