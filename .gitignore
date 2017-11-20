@@ -1,5 +1,4 @@
 *.o
 *~
 *output
-*demo
 db_engine.*
