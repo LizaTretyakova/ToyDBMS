@@ -99,10 +99,6 @@ void PSelectNode::Initialize(){
   } else std::cout << "Unable to open file";
 }
 
-std::vector<std::vector<Value>> PSelectNode::GetNext(){
-  return data;
-}
-
 void PSelectNode::Print(int indent){
     for (int i = 0; i < indent; i++){
         std::cout << " ";

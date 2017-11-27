@@ -33,10 +33,6 @@ PJoinNode::~PJoinNode(){
   delete right;
 }
 
-std::vector<std::vector<Value>> PJoinNode::GetNext(){
-  return data;
-}
-
 void PJoinNode::Initialize(){
   PGetNextNode* l = (PGetNextNode*)left;
   PGetNextNode* r = (PGetNextNode*)right;

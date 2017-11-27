@@ -11,10 +11,6 @@ PProjectNode::~PProjectNode() {
   delete left;
 }
 
-std::vector<std::vector<Value>> PProjectNode::GetNext() {
-  return data;
-}
-
 void PProjectNode::Initialize() {
     PGetNextNode* child = (PGetNextNode*)left;
     std::vector<std::vector<Value>> child_data = child->GetNext();

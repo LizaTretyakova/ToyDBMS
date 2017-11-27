@@ -204,44 +204,44 @@ LUniqueNode::LUniqueNode(LAbstractNode* child):LAbstractNode(child, NULL, child-
 LUniqueNode::~LUniqueNode(){
 }
 
-void PResultNode::load_next_block() {
-    std::string line;
-    std::string word;
-    for(int i = 0; i < buffer.size()
-        && getline(data_file, line); ++i) {
-        buffer[i].clear();
-        ++pos;
-        block_pos = (block_pos + 1) % buffer.size();
-        std::istringstream iss(line);
-        for(int j = 0; iss >> word; ++j) {
-            Value h;
-            switch(prototype->field[j]) {
-            case VT_INT:
-                h = Value(std::stoi(word));
-                break;
-            case VT_STRING:
-                h = Value(word);
-                break;
-            }
-            buffer[i].push_back(h);
-        }
-    }
-}
+//void PResultNode::load_next_block() {
+//    std::string line;
+//    std::string word;
+//    for(int i = 0; i < buffer.size()
+//        && getline(data_file, line); ++i) {
+//        buffer[i].clear();
+//        ++pos;
+//        block_pos = (block_pos + 1) % buffer.size();
+//        std::istringstream iss(line);
+//        for(int j = 0; iss >> word; ++j) {
+//            Value h;
+//            switch(prototype->field[j]) {
+//            case VT_INT:
+//                h = Value(std::stoi(word));
+//                break;
+//            case VT_STRING:
+//                h = Value(word);
+//                break;
+//            }
+//            buffer[i].push_back(h);
+//        }
+//    }
+//}
 
-void PResultNode::dump_buffer_to_file() {
-    for(int i = 0; i < buffer.size(); ++i) {
-        for(int j = 0; j < buffer[i].size(); ++j) {
-            switch(prototype->fieldTypes[j]) {
-            case VT_INT:
-                data_file << buffer[i][j].vint << " ";
-                break;
-            case VT_STRING:
-                data_file << buffer[i][j].vstr << " ";
-            }
-        }
-        data_file << std::endl;
-    }
-}
+//void PResultNode::dump_buffer_to_file() {
+//    for(int i = 0; i < buffer.size(); ++i) {
+//        for(int j = 0; j < buffer[i].size(); ++j) {
+//            switch(prototype->fieldTypes[j]) {
+//            case VT_INT:
+//                data_file << buffer[i][j].vint << " ";
+//                break;
+//            case VT_STRING:
+//                data_file << buffer[i][j].vstr << " ";
+//            }
+//        }
+//        data_file << std::endl;
+//    }
+//}
 
 /* Physical nodes*/
 

@@ -19,10 +19,6 @@ PUniqueNode::~PUniqueNode(){
     delete left;
 }
 
-std::vector<std::vector<Value>> PUniqueNode::GetNext(){
-    return data;
-}
-
 bool PUniqueNode::equals(std::vector<Value> a1, std::vector<Value> a2) {
     if(a1.size() != a2.size()) {
         return false;

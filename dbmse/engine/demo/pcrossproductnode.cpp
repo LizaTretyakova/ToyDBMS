@@ -13,16 +13,6 @@ PCrossProductNode::~PCrossProductNode() {
     delete right;
 }
 
-std::vector<std::vector<Value>> PCrossProductNode::GetNext() {
-    int block_size = prototype->get_block_size();
-    std::vector<std::vector<Value> >
-        result(min(block_size, pos % block_size));
-    for(int i = block * block_size; i < pos; ++i) {
-        result.push_back(data[i]);
-    }
-    return result;
-}
-
 void PCrossProductNode::Initialize() {
     PGetNextNode* l = (PGetNextNode*)left;
     PGetNextNode* r = (PGetNextNode*)right;

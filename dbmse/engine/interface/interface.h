@@ -85,7 +85,7 @@ class LCrossProductNode : public LAbstractNode{
 class LJoinNode : public LAbstractNode{
   public:
     // offsets are defined as "TableName.AttributeName" so, ensure there is no duplicates
-    LJoinNode(LAbstractNode* left, LAbstractNode* right, std::string attr1, std::string attr2, int block_size);
+    LJoinNode(LAbstractNode* left, LAbstractNode* right, std::string attr1, std::string attr2);
     ~LJoinNode();   
     // attributes to perform equi-join on
     std::string attr1;

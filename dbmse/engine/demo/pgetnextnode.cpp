@@ -21,12 +21,16 @@
 
 #include "pgetnextnode.h"
 
-PGetNextNode::PGetNextNode(): PResultNode(NULL, NULL, NULL){
+PGetNextNode::PGetNextNode():
+    PResultNode(NULL, NULL, NULL), block_pos(0) {
   Initialize();
 }
 
-PGetNextNode::PGetNextNode(PResultNode* left, PResultNode* right, LAbstractNode* source):
-                                                                  PResultNode(left, right, source){
+PGetNextNode::PGetNextNode(
+        PResultNode* left,
+        PResultNode* right,
+        LAbstractNode* source):
+    PResultNode(left, right, source), block_pos(0) {
   Initialize();
 }
 
@@ -34,8 +38,19 @@ void PGetNextNode::Initialize(){
   return;
 }
 
-std::vector<std::vector<Value>> PGetNextNode::GetNext(){
-  return std::vector<std::vector<Value>>();
+// returns (true, ...) if not ended,
+// (false, ...) otherwise
+std::pair<int, std::vector<std::vector<Value>>> PGetNextNode::GetNext() {
+    int block_size = prototype->get_block_size();
+    block_pos = block_pos % data.size();
+
+    std::vector<std::vector<Value> >
+        result(min(block_size, data.size() - block_pos));
+    for(; block_pos < data.size(); ++block_pos) {
+        result.push_back(data[block_pos]);
+    }
+
+    return std::make_pair(block_pos == data.size(), result);
 }
 
 int PGetNextNode::GetAttrNum(){
