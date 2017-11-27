@@ -24,7 +24,7 @@
 #include "../interface/interface.h"
 #include "pgetnextnode.h"
 
-class PJoinNode : public PGetNextNode{
+class PJoinNode : public PGetNextNode {
   public:
     PJoinNode(PGetNextNode* left, PGetNextNode* right, LAbstractNode* p);
     ~PJoinNode();
@@ -32,7 +32,7 @@ class PJoinNode : public PGetNextNode{
     virtual void Initialize();
     virtual void Print(int indent);
   protected:
-    void join_blocks();
+    virtual void join_blocks();
   private:
     int pos;
 };
