@@ -6,6 +6,11 @@
 #include "pjoinmergesortnode.h"
 #include "pjoinnode.h"
 
+PJoinMergeSortNode::~PJoinMergeSortNode() {
+    delete left;
+    delete right;
+}
+
 void PJoinMergeSortNode::join_blocks(
         std::vector<std::vector<Value>> lres,
         std::vector<std::vector<Value>> rres,
@@ -35,7 +40,7 @@ void PJoinMergeSortNode::join_blocks(
                 }
                 break;
             case VT_STRING:
-                if(std::strcmp((string)lres[lit][lpos], (string)rres[rit][rpos]) < 0) {
+                if(std::strcmp(((std::string)lres[lit][lpos]).c_str(), ((std::string)rres[rit][rpos]).c_str()) < 0) {
                     ++lit;
                 } else {
                     ++rit;

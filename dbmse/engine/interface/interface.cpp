@@ -40,17 +40,19 @@ LAbstractNode* LAbstractNode::GetRight(){
     return right;
 }
 
+int LAbstractNode::get_block_size() {
+    return block_size;
+}
+
 LJoinNode::LJoinNode(
         LAbstractNode* left, // assumed to be not null
         LAbstractNode* right,
         std::string offset1,
-        std::string offset2,
-        int memorylimit
+        std::string offset2
     ): LAbstractNode(left, right, left->get_block_size()) {
 
     this->attr1 = offset1;
     this->attr2 = offset2;
-    this->memorylimit = memorylimit;
 
     std::vector<std::string> match;
     ValueType vt;
@@ -124,6 +126,33 @@ LCrossProductNode::LCrossProductNode(
 }
 
 LCrossProductNode::~LCrossProductNode() {
+    delete left;
+    delete right;
+}
+
+LUnionNode::LUnionNode(LAbstractNode *l, LAbstractNode *r):
+    LAbstractNode(l, r, l->get_block_size()) {
+    fieldNames.insert(std::end(fieldNames),
+                      std::begin(left->fieldNames),
+                      std::end(left->fieldNames));
+    fieldNames.insert(std::end(fieldNames),
+                      std::begin(right->fieldNames),
+                      std::end(right->fieldNames));
+    fieldTypes.insert(std::end(fieldTypes),
+                      std::begin(left->fieldTypes),
+                      std::end(left->fieldTypes));
+    fieldTypes.insert(std::end(fieldTypes),
+                      std::begin(right->fieldTypes),
+                      std::end(right->fieldTypes));
+    fieldOrders.insert(std::end(fieldOrders),
+                       std::begin(left->fieldOrders),
+                       std::end(left->fieldOrders));
+    fieldOrders.insert(std::end(fieldOrders),
+                       std::begin(right->fieldOrders),
+                       std::end(right->fieldOrders));
+}
+
+LUnionNode::~LUnionNode() {
     delete left;
     delete right;
 }
@@ -250,20 +279,18 @@ PResultNode::PResultNode(PResultNode* left, PResultNode* right, LAbstractNode* p
     this->right = right;
     this->prototype = p;
 
-    struct timeval tp;
-    gettimeofday(&tp, NULL);
-    long int ms =
-            tp.tv_sec * 1000 + tp.tv_usec / 1000;
-    std::stringstream filename;
-    filename << "./tmp/op" << ms;
-    data_filename = filename.str();
-    data_file = std::ifstream(data_filename);
-
-    buffer = std::vector(p->get_block_size());
-    load_next_block();
+//    struct timeval tp;
+//    gettimeofday(&tp, NULL);
+//    long int ms =
+//            tp.tv_sec * 1000 + tp.tv_usec / 1000;
+//    std::stringstream filename;
+//    filename << "./tmp/op" << ms;
+//    data_filename = filename.str();
+//    data_file = std::ifstream(data_filename);
+//    buffer = std::vector(p->get_block_size());
+//    load_next_block();
 
     pos = 0;
-    block = 0;
     block_pos = 0;
 
     // stats
@@ -274,7 +301,6 @@ PResultNode::PResultNode(PResultNode* left, PResultNode* right, LAbstractNode* p
     if(right != 0) {
         in_records += right->get_out_records();
     }
-    out_records = 0;
 }
 
 PResultNode::~PResultNode(){
@@ -282,14 +308,13 @@ PResultNode::~PResultNode(){
 
 std::tuple<ErrCode, std::vector<Value>> PResultNode::GetRecord(){
     std::vector<Value> vals;
-
     if (pos == out_records) {
         return std::make_tuple(EC_FINISH, vals);
     }
 
-    if (block_pos == prototype->get_block_size()) {
-        load_next_block();
-    }
+//    if (block_pos == prototype->get_block_size()) {
+//        load_next_block();
+//    }
 
     for(int i = 0; i < GetAttrNum(); i++){
         vals.push_back(data[pos][i]);

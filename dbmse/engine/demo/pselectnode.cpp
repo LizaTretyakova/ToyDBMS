@@ -93,9 +93,7 @@ void PSelectNode::Initialize(){
             }
             if(passes_pred) {
                 data.push_back(tmp);
-                ++out_records;
             }
-            ++in_resords;
         }
         f.close();
     } else {

@@ -5,6 +5,11 @@
 #include "pjoinhashnode.h"
 #include "pjoinnode.h"
 
+PJoinHashNode::~PJoinHashNode() {
+    delete left;
+    delete right;
+}
+
 void PJoinHashNode::join_blocks(
         std::vector<std::vector<Value>> lres,
         std::vector<std::vector<Value>> rres,

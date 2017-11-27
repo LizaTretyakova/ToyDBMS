@@ -86,9 +86,6 @@ void PJoinNode::Initialize(){
     std::pair<bool, std::vector<std::vector<Value>>> rres = r->GetNext();
     while(lres.first) {
         while(rres.first) {
-            in_records += lres.second.size();
-            in_records += rres.second.size();
-
             join_blocks(
                 lres.second, rres.second,
                 ln, rn, lpos, rpos, vt);
@@ -96,8 +93,6 @@ void PJoinNode::Initialize(){
         }
         lres = l->GetNext();
     }
-
-    out_records = data.size();
 }
 
 void PJoinNode::Print(int indent){

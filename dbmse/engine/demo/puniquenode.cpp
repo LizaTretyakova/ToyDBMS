@@ -49,8 +49,6 @@ void PUniqueNode::Initialize(){
             l_data = l->GetNext();
             l_data.first;
             l_data = l->GetNext()) {
-        in_records += l_data.second.size();
-
         for(int i = 0; i < l_data.second.size(); ++i) {
             bool duplicate = false;
             for(int j = i + 1; j < l_data.second.size(); ++j) {
@@ -66,7 +64,6 @@ void PUniqueNode::Initialize(){
             }
         }
     }
-    out_records = data.size();
 }
 
 void PUniqueNode::Print(int indent){

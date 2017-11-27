@@ -22,7 +22,7 @@ void PUnionNode::Initialize() {
             data.push_back(val);
         }
     }
-    for(std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext();
+    for(std::pair<bool, std::vector<std::vector<Value>>> r_data = r->GetNext();
             r_data.first; r_data = r->GetNext()) {
         right_records += r_data.second.size();
 
@@ -30,12 +30,14 @@ void PUnionNode::Initialize() {
             data.push_back(val);
         }
     }
-
-    in_records = left_records + right_records;
-    out_records = data.size();
 }
 
-void Print(int indent) {
+PUnionNode::~PUnionNode(){
+    delete left;
+    delete right;
+}
+
+void PUnionNode::Print(int indent) {
     for (int i = 0; i < indent; i++) {
         std::cout << " ";
     }

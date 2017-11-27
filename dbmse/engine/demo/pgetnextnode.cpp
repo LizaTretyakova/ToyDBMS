@@ -17,6 +17,7 @@
 //      3) contract contains print methods for physical and logical nodes
 // 0.2: first public release
 
+#include <algorithm>
 #include <tuple>
 
 #include "pgetnextnode.h"
@@ -30,9 +31,7 @@ PGetNextNode::PGetNextNode(
         PResultNode* left,
         PResultNode* right,
         LAbstractNode* source):
-    PResultNode(left, right, source), block_pos(0),
-    in_records(0),
-    out_records(0) {
+    PResultNode(left, right, source), block_pos(0) {
   Initialize();
 }
 
@@ -42,12 +41,12 @@ void PGetNextNode::Initialize(){
 
 // returns (true, ...) if not ended,
 // (false, ...) otherwise
-std::pair<int, std::vector<std::vector<Value>>> PGetNextNode::GetNext() {
+std::pair<bool, std::vector<std::vector<Value>>> PGetNextNode::GetNext() {
     int block_size = prototype->get_block_size();
     block_pos = block_pos % data.size();
 
     std::vector<std::vector<Value> >
-        result(min(block_size, data.size() - block_pos));
+        result(std::min(block_size, (int)data.size() - block_pos));
     for(; block_pos < data.size(); ++block_pos) {
         result.push_back(data[block_pos]);
     }

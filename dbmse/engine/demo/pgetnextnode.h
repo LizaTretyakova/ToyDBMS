@@ -27,7 +27,7 @@ class PGetNextNode : public PResultNode{
     PGetNextNode();
     PGetNextNode(PResultNode* left, PResultNode* right, LAbstractNode* p);
     // internal way to transfer data
-    virtual std::vector<std::vector<Value>> GetNext();
+    virtual std::pair<bool, std::vector<std::vector<Value>>> GetNext();
     // getting access to data
     virtual void Initialize();
     // get number of attributes

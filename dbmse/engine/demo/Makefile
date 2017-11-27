@@ -5,7 +5,7 @@ CXXFLAGS=-std=c++11 -g -O0
 BINDIR=bin
 OBJDIR=obj
 
-SRC=../interface/interface.cpp pgetnextnode.cpp pselectnode.cpp pjoinnode.cpp demo.cpp pcrossproductnode.cpp pprojectnode.cpp puniquenode.cpp
+SRC=../interface/interface.cpp pgetnextnode.cpp pselectnode.cpp pjoinnode.cpp demo.cpp pcrossproductnode.cpp pprojectnode.cpp puniquenode.cpp punionnode.cpp pjoinhashnode.cpp pjoinmergesortnode.cpp
 OBJ=$(SRC:.cpp=.o)
 
 all: $(BINDIR) $(OBJDIR) demo

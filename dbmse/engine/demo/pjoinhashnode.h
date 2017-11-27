@@ -12,6 +12,15 @@ class PJoinHashNode : public PJoinNode {
         PJoinHashNode(PGetNextNode* left, PGetNextNode* right, LAbstractNode* p):
             PJoinNode(left, right, p) {}
         ~PJoinHashNode();
+        virtual void join_blocks(
+                std::vector<std::vector<Value>> lres,
+                std::vector<std::vector<Value>> rres,
+                std::vector<std::vector<std::string>> ln,
+                std::vector<std::vector<std::string>> rn,
+                std::ptrdiff_t lpos,
+                std::ptrdiff_t rpos,
+                ValueType vt);
+        virtual void Print(int indent);
     private:
         void join_blocks_int(
                 std::vector<std::vector<Value>> lres,

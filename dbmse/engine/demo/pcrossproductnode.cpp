@@ -23,9 +23,6 @@ void PCrossProductNode::Initialize() {
         std::pair<bool, std::vector<std::vector<Value>>>
             r_data = r->GetNext();
         while(r_data.first) {
-            in_records += l_data.second.size();
-            in_records += r_data.second.size();
-
             for(auto l_row: l_data.second) {
                 for(auto r_row: r_data.second) {
                     std::vector<Value> row(l_row);
@@ -37,7 +34,6 @@ void PCrossProductNode::Initialize() {
         }
         l_data = l->GetNext();
     }
-    out_records = data.size();
 }
 
 void PCrossProductNode::Print(int indent){

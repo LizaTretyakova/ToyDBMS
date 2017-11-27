@@ -82,7 +82,7 @@ class LCrossProductNode : public LAbstractNode{
     ~LCrossProductNode();
 };
 
-class LJoinNode : public LAbstractNode{
+class LJoinNode : public LAbstractNode {
   public:
     // offsets are defined as "TableName.AttributeName" so, ensure there is no duplicates
     LJoinNode(LAbstractNode* left, LAbstractNode* right, std::string attr1, std::string attr2);
@@ -117,8 +117,14 @@ class LSelectNode : public LAbstractNode{
     BaseTable table;
 };
 
+class LUnionNode : public LAbstractNode {
+public:
+    LUnionNode(LAbstractNode* left, LAbstractNode* right);
+    ~LUnionNode();
+};
+
 class LUniqueNode : public LAbstractNode{
-  public:
+public:
     LUniqueNode(LAbstractNode* child);
     ~LUniqueNode();
 };
@@ -155,7 +161,7 @@ public:
 
     // stats
     int get_out_records() {
-        return out_records;
+        return data.size();
     }
     int get_in_records() {
         return in_records;

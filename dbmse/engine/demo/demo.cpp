@@ -25,9 +25,12 @@
 #include "../interface/interface.h"
 #include "../interface/basics.h"
 #include "pselectnode.h"
+#include "pjoinhashnode.h"
+#include "pjoinmergesortnode.h"
 #include "pjoinnode.h"
 #include "pcrossproductnode.h"
 #include "pprojectnode.h"
+#include "punionnode.h"
 #include "puniquenode.h"
 
 // Here be rewriter and optimizer
@@ -48,6 +51,11 @@ PResultNode* QueryFactory(LAbstractNode* node){
         PGetNextNode* cres = (PGetNextNode*)QueryFactory(node->GetLeft());
 
         return new PProjectNode(cres, node);
+    } else if (dynamic_cast<LUnionNode*>(node) != NULL) {
+        PGetNextNode* lres = (PGetNextNode*)QueryFactory(node->GetLeft());
+        PGetNextNode* rres = (PGetNextNode*)QueryFactory(node->GetRight());
+
+        return new PUnionNode(lres, rres, node);
     } else if (dynamic_cast<LUniqueNode*>(node) != NULL) {
         PGetNextNode* cres = (PGetNextNode*)QueryFactory(node->GetLeft());
 
@@ -73,7 +81,6 @@ void ExecuteQuery(PResultNode* query){
     ec = std::get<0>(res);
     vals = std::get<1>(res);
   }
-
 }
 
 void test_it_with_fire(LAbstractNode* n, std::string s) {
@@ -92,7 +99,7 @@ int main(){
         std::cout << bt1;
         Predicate p1(PT_EQUALS, VT_INT, 3, 4, "");
         Predicate p2(PT_GREATERTHAN, VT_INT, 0, 3, "");
-        LAbstractNode* n1 = new LSelectNode(bt1, {p1, p2});
+        LAbstractNode* n1 = new LSelectNode(bt1, {p1, p2}, 3);
         test_it_with_fire(n1, "SELECT * WHERE groups == 4 AND id < 3");
         delete n1;
     }
@@ -102,9 +109,9 @@ int main(){
         BaseTable bt2 = BaseTable("table2");
         std::cout << bt1;
         std::cout << bt2;
-        LAbstractNode* n1 = new LSelectNode(bt1, {});
-        LAbstractNode* n2 = new LSelectNode(bt2, {});
-        LJoinNode* n3 = new LJoinNode(n1, n2, "table1.id", "table2.id2", 666);
+        LAbstractNode* n1 = new LSelectNode(bt1, {}, 3);
+        LAbstractNode* n2 = new LSelectNode(bt2, {}, 3);
+        LJoinNode* n3 = new LJoinNode(n1, n2, "table1.id", "table2.id2");
         PResultNode* q1 = QueryFactory(n3);
         q1->Print(0);
         ExecuteQuery(q1);
@@ -114,7 +121,7 @@ int main(){
 
     {
         BaseTable bt1 = BaseTable("table1");
-        LAbstractNode* n1 = new LSelectNode(bt1, {});
+        LAbstractNode* n1 = new LSelectNode(bt1, {}, 3);
         LAbstractNode* n2 = new LProjectNode(n1, {"table1.id", "table1.frequency"});
         test_it_with_fire(n2, "SELECT id, frequency FROM table1");
         delete n2;
@@ -124,8 +131,8 @@ int main(){
         BaseTable bt1 = BaseTable("table1");
         BaseTable bt2 = BaseTable("table2");
 
-        LAbstractNode* select1 = new LSelectNode(bt1, {});
-        LAbstractNode* select2 = new LSelectNode(bt2, {});
+        LAbstractNode* select1 = new LSelectNode(bt1, {}, 3);
+        LAbstractNode* select2 = new LSelectNode(bt2, {}, 3);
         LAbstractNode* crossp = new LCrossProductNode(select1, select2);
         LAbstractNode* proj = new LProjectNode(crossp, {"table1.id", "table2.id2", "table2.type2"});
 
@@ -138,8 +145,8 @@ int main(){
         BaseTable bt1 = BaseTable("table1");
         BaseTable bt2 = BaseTable("table2");
 
-        LAbstractNode* select1 = new LSelectNode(bt1, {});
-        LAbstractNode* select2 = new LSelectNode(bt2, {});
+        LAbstractNode* select1 = new LSelectNode(bt1, {}, 3);
+        LAbstractNode* select2 = new LSelectNode(bt2, {}, 3);
         LAbstractNode* crossp = new LCrossProductNode(select1, select2);
         LAbstractNode* proj = new LProjectNode(crossp, {"table1.id", "table2.id2", "table2.type2"});
         LAbstractNode* uniq = new LUniqueNode(proj);
@@ -156,9 +163,9 @@ int main(){
         Predicate p1(PT_GREATERTHAN, VT_INT, 0, 5, "");
         Predicate p2(PT_GREATERTHAN, VT_STRING, 1, 0, "three");
 
-        LAbstractNode* select1 = new LSelectNode(bt1, {p1});
-        LAbstractNode* select2 = new LSelectNode(bt2, {p2});
-        LAbstractNode* join = new LJoinNode(select1, select2, "table1.id", "table2.id2", 100500);
+        LAbstractNode* select1 = new LSelectNode(bt1, {p1}, 3);
+        LAbstractNode* select2 = new LSelectNode(bt2, {p2}, 3);
+        LAbstractNode* join = new LJoinNode(select1, select2, "table1.id", "table2.id2");
         LAbstractNode* proj = new LProjectNode(join, {"table1.id", "table2.type2"});
 
         test_it_with_fire(proj,
@@ -176,11 +183,11 @@ int main(){
         Predicate p1(PT_EQUALS, VT_INT, 3, 4, "");
         Predicate p2(PT_GREATERTHAN, VT_INT, 0, 3, "");
 
-        LAbstractNode* select1 = new LSelectNode(bt1, {p1, p2});
-        LAbstractNode* select2 = new LSelectNode(bt2, {});
-        LAbstractNode* select3 = new LSelectNode(bt1, {});
+        LAbstractNode* select1 = new LSelectNode(bt1, {p1, p2}, 3);
+        LAbstractNode* select2 = new LSelectNode(bt2, {}, 3);
+        LAbstractNode* select3 = new LSelectNode(bt1, {}, 3);
         LAbstractNode* crossp = new LCrossProductNode(select1, select2);
-        LAbstractNode* join = new LJoinNode(crossp, select3, "table1.id", "table1.id", 100500);
+        LAbstractNode* join = new LJoinNode(crossp, select3, "table1.id", "table1.id");
 
         test_it_with_fire(join,
             "(SELECT * FROM table1 WHERE groups == 4 AND id < 3)"
@@ -197,11 +204,11 @@ int main(){
         Predicate p1(PT_EQUALS, VT_INT, 3, 4, "");
         Predicate p2(PT_GREATERTHAN, VT_INT, 0, 3, "");
 
-        LAbstractNode* select1 = new LSelectNode(bt1, {p1, p2});
-        LAbstractNode* select2 = new LSelectNode(bt2, {});
-        LAbstractNode* select3 = new LSelectNode(bt1, {});
+        LAbstractNode* select1 = new LSelectNode(bt1, {p1, p2}, 3);
+        LAbstractNode* select2 = new LSelectNode(bt2, {}, 3);
+        LAbstractNode* select3 = new LSelectNode(bt1, {}, 3);
         LAbstractNode* crossp = new LCrossProductNode(select1, select2);
-        LAbstractNode* join = new LJoinNode(crossp, select3, "table1.id", "table1.id", 100500);
+        LAbstractNode* join = new LJoinNode(crossp, select3, "table1.id", "table1.id");
         LAbstractNode* proj = new LProjectNode(join, {"table1.description", "table1.frequency", "table1.groups"});
         LAbstractNode* uniq = new LUniqueNode(proj);
 
