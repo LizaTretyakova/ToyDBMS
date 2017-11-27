@@ -3,7 +3,7 @@
 #include <cstring>
 #include <unordered_map>
 
-#include "pjoinhashnode.h"
+#include "pjoinmergesortnode.h"
 #include "pjoinnode.h"
 
 void PJoinMergeSortNode::join_blocks(
@@ -56,4 +56,13 @@ void PJoinMergeSortNode::join_blocks(
         }
         data.push_back(tmp);
     }
+}
+
+void PJoinMergeSortNode::Print(int indent){
+  for (int i = 0; i < indent; i++){
+    std::cout << " ";
+  }
+  std::cout << "NL-MS-JOIN: " << ((LJoinNode*)prototype)->attr1 <<"=" << ((LJoinNode*)prototype)->attr2 << std::endl;
+  left->Print(indent + 2);
+  right->Print(indent + 2);
 }

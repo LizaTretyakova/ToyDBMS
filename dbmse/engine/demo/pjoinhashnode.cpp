@@ -81,3 +81,12 @@ void PJoinHashNode::join_blocks_str(
         }
     }
 }
+
+void PJoinHashNode::Print(int indent){
+  for (int i = 0; i < indent; i++){
+    std::cout << " ";
+  }
+  std::cout << "NL-HASH-JOIN: " << ((LJoinNode*)prototype)->attr1 <<"=" << ((LJoinNode*)prototype)->attr2 << std::endl;
+  left->Print(indent + 2);
+  right->Print(indent + 2);
+}
