@@ -16,16 +16,23 @@ void PUnionNode::Initialize() {
 
     for(std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext();
             l_data.first; l_data = l->GetNext()) {
+        left_records += l_data.second.size();
+
         for(std::vector<Value> val: l_data.second) {
             data.push_back(val);
         }
     }
     for(std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext();
             r_data.first; r_data = r->GetNext()) {
+        right_records += r_data.second.size();
+
         for(std::vector<Value> val: r_data.second) {
             data.push_back(val);
         }
     }
+
+    in_records = left_records + right_records;
+    out_records = data.size();
 }
 
 void Print(int indent) {

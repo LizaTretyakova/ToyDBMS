@@ -16,18 +16,30 @@ void PProjectNode::Initialize() {
     std::vector<std::vector<Value>> child_data = child->GetNext();
     LAbstractNode* child_proto = child->prototype;
 
-    for(auto row: child_data) {
-        std::vector<Value> tmp;
-        for(int i = 0; i < child_proto->fieldNames.size(); ++i) {
-            for(auto name: child_proto->fieldNames[i]) {
-                if(prototype->contains_str(name)) {
-                    tmp.push_back(row[i]);
-                    break;
+    std::pair<bool, std::vector<std::vector<Value>>>
+        l_data = l->GetNext();
+    while(l_data.first) {
+        std::pair<bool, std::vector<std::vector<Value>>>
+            r_data = r->GetNext();
+        while(r_data.first) {
+            for(auto row: child_data) {
+                std::vector<Value> tmp;
+                for(int i = 0; i < child_proto->fieldNames.size(); ++i) {
+                    for(auto name: child_proto->fieldNames[i]) {
+                        if(prototype->contains_str(name)) {
+                            tmp.push_back(row[i]);
+                            break;
+                        }
+                    }
                 }
+                data.push_back(tmp);
             }
+            r_data = r->GetNext();
         }
-        data.push_back(tmp);
+        l_data = l->GetNext();
     }
+    in_records = data.size();
+    out_records = data.size();
 }
 
 void PProjectNode::Print(int indent){

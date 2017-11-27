@@ -45,22 +45,28 @@ bool PUniqueNode::equals(std::vector<Value> a1, std::vector<Value> a2) {
 
 void PUniqueNode::Initialize(){
     PGetNextNode* l = (PGetNextNode*)left;
-    std::vector<std::vector<Value>> l_data = l->GetNext();
+    for(std::pair<bool, std::vector<std::vector<Value>>>
+            l_data = l->GetNext();
+            l_data.first;
+            l_data = l->GetNext()) {
+        in_records += l_data.second.size();
 
-    for(int i = 0; i < l_data.size(); ++i) {
-        bool duplicate = false;
-        for(int j = i + 1; j < l_data.size(); ++j) {
-            if(equals(l_data[i], l_data[j])) {
-                duplicate = true;
-                break;
+        for(int i = 0; i < l_data.second.size(); ++i) {
+            bool duplicate = false;
+            for(int j = i + 1; j < l_data.second.size(); ++j) {
+                if(equals(l_data.second[i], l_data.second[j])) {
+                    duplicate = true;
+                    break;
+                }
+            }
+            std::cerr << std::endl;
+            if(!duplicate) {
+                std::vector<Value> row(l_data.second[i]);
+                data.push_back(row);
             }
         }
-        std::cerr << std::endl;
-        if(!duplicate) {
-            std::vector<Value> row(l_data[i]);
-            data.push_back(row);
-        }
     }
+    out_records = data.size();
 }
 
 void PUniqueNode::Print(int indent){

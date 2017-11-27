@@ -131,13 +131,7 @@ protected:
     PResultNode* right;
     std::vector<std::vector<Value>> data;
     int pos;
-    int block;
-
-    // likely unnecessary
-    std::vector<std::vector<Value> > buffer;
-    std::ifstream data_file;
-    std::string data_filename;
-    int block_pos;
+    int block_pos; // for GetNext()
 
     // stats
     int in_records;
@@ -162,6 +156,9 @@ public:
     // stats
     int get_out_records() {
         return out_records;
+    }
+    int get_in_records() {
+        return in_records;
     }
 };
 

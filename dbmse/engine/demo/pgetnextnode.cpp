@@ -30,7 +30,9 @@ PGetNextNode::PGetNextNode(
         PResultNode* left,
         PResultNode* right,
         LAbstractNode* source):
-    PResultNode(left, right, source), block_pos(0) {
+    PResultNode(left, right, source), block_pos(0),
+    in_records(0),
+    out_records(0) {
   Initialize();
 }
 

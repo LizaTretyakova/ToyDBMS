@@ -62,41 +62,45 @@ void PSelectNode::Initialize(){
   std::string word;
   std::ifstream f(table.relpath);
   if(f.is_open()){
-    // skipping first 4 lines
-    getline(f, line);
-    getline(f, line);
-    getline(f, line);
-    getline(f, line);
+        // skipping first 4 lines
+        getline(f, line);
+        getline(f, line);
+        getline(f, line);
+        getline(f, line);
 
-    while(getline(f, line)){
-      std::vector<Value> tmp;
-      std::istringstream iss(line, std::istringstream::in);
-      int i = 0;
-      bool passes_pred = true;
+        while(getline(f, line)){
+            std::vector<Value> tmp;
+            std::istringstream iss(line, std::istringstream::in);
+            int i = 0;
+            bool passes_pred = true;
 
-      while (passes_pred && iss >> word){
-        Value h;
-        if (prototype->fieldTypes[i] == VT_INT) {
-          h = Value(std::stoi(word));
-        } else {
-          h = Value(word);
-        }
+            while (passes_pred && iss >> word){
+                Value h;
+                if (prototype->fieldTypes[i] == VT_INT) {
+                    h = Value(std::stoi(word));
+                } else {
+                    h = Value(word);
+                }
 
-        for(int j = 0; j < predicate.size() && passes_pred; ++j) {
-            if(predicate[j].attribute == i) {
-                passes_pred &= predicate[j].apply(h);
+                for(int j = 0; j < predicate.size() && passes_pred; ++j) {
+                    if(predicate[j].attribute == i) {
+                        passes_pred &= predicate[j].apply(h);
+                    }
+                }
+
+                tmp.push_back(h);
+                i++;
             }
+            if(passes_pred) {
+                data.push_back(tmp);
+                ++out_records;
+            }
+            ++in_resords;
         }
-
-        tmp.push_back(h);
-        i++;
-      }
-      if(passes_pred) {
-        data.push_back(tmp);
-      }
+        f.close();
+    } else {
+        std::cout << "Unable to open file";
     }
-    f.close();
-  } else std::cout << "Unable to open file";
 }
 
 void PSelectNode::Print(int indent){

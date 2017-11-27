@@ -37,6 +37,11 @@ class PSelectNode : public PGetNextNode{
     BaseTable table;
     std::vector<Predicate> predicate;
     int pos;
+
+    // stats
+    double get_selectiveness() {
+        return (double)out_records / in_records;
+    }
 };
 
 #endif // PSELECTNODE_H
