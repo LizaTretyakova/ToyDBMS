@@ -9,7 +9,6 @@ class PProjectNode : public PGetNextNode{
   public:
     PProjectNode(PGetNextNode* left, LAbstractNode* p);
     ~PProjectNode();
-    virtual std::vector<std::vector<Value>> GetNext();
     virtual void Initialize();
     virtual void Print(int indent);
 };

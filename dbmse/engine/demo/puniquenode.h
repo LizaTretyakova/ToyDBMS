@@ -9,7 +9,6 @@ class PUniqueNode : public PGetNextNode{
   public:
     PUniqueNode(PGetNextNode* child, LAbstractNode* p);
     ~PUniqueNode();
-    virtual std::vector<std::vector<Value>> GetNext();
     virtual void Initialize();
     // print node
     virtual void Print(int indent);
