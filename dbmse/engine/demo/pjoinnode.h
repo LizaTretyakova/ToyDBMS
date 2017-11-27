@@ -31,6 +31,8 @@ class PJoinNode : public PGetNextNode{
     virtual std::vector<std::vector<Value>> GetNext();
     virtual void Initialize();
     virtual void Print(int indent);
+  protected:
+    void join_blocks();
   private:
     int pos;
 };

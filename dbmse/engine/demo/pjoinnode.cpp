@@ -33,52 +33,66 @@ PJoinNode::~PJoinNode(){
   delete right;
 }
 
-void PJoinNode::Initialize(){
-  PGetNextNode* l = (PGetNextNode*)left;
-  PGetNextNode* r = (PGetNextNode*)right;
-  LAbstractNode* lp = l->prototype;
-  LAbstractNode* rp = r->prototype;
-  std::vector<std::vector<std::string>> ln = lp->fieldNames;
-  std::vector<std::vector<std::string>> rn = rp->fieldNames;
+void PJoinNode::join_blocks(
+        std::vector<std::vector<Value>> lres,
+        std::vector<std::vector<Value>> rres,
+        std::vector<std::vector<std::string>> ln,
+        std::vector<std::vector<std::string>> rn,
+        std::ptrdiff_t lpos,
+        std::ptrdiff_t rpos,
+        ValueType vt) {
+    for (int i = 0; i < lres.size(); i++) {
+        for (int j = 0; j < rres.size(); j++){
+            bool join = vt == VT_INT ?
+                    ((int)lres[i][lpos] == (int)rres[j][rpos]) :
+                    ((std::string)lres[i][lpos] == (std::string)rres[j][rpos]);
 
-  std::vector<std::vector<Value>> lres = l->GetNext();
-  std::vector<std::vector<Value>> rres = r->GetNext();
-  LAbstractNode* p = prototype;
-  std::ptrdiff_t lpos = lp->find_pos(((LJoinNode*)prototype)->attr1, ((LJoinNode*)prototype)->attr2);
-  std::ptrdiff_t rpos = rp->find_pos(((LJoinNode*)prototype)->attr1, ((LJoinNode*)prototype)->attr2);
+            if (!join) {
+                continue;
+            }
 
-  ValueType vt = lp->fieldTypes[lpos];
-
-  for (int i = 0; i < lres.size(); i++)
-    for (int j = 0; j < rres.size(); j++){
-      bool join = false;
-      if(vt == VT_INT){
-        if((int)lres[i][lpos] == (int)rres[j][rpos]) join = true;
-      }else{
-        if((std::string)lres[i][lpos] == (std::string)rres[j][rpos]) join = true;
-      }
-
-      if (join != true) continue;
-
-      std::vector<Value> tmp;
-      for (int k = 0; k < ln.size(); k++){
-        if(k != lpos){
-            tmp.push_back(lres[i][k]);
+            std::vector<Value> tmp;
+            for (int k = 0; k < ln.size(); k++){
+                if(k != lpos){
+                    tmp.push_back(lres[i][k]);
+                }
+            }
+            for (int k = 0; k < rn.size(); k++){
+                if(k != rpos){
+                    tmp.push_back(rres[j][k]);
+                }
+            }
+            tmp.push_back(lres[i][lpos]);
+            data.push_back(tmp);
         }
-      }
-
-      for (int k = 0; k < rn.size(); k++){
-        if(k != rpos){
-            tmp.push_back(rres[j][k]);
-        }
-      }
-
-      tmp.push_back(lres[i][lpos]);
-
-
-      data.push_back(tmp);
     }
+}
 
+void PJoinNode::Initialize(){
+    PGetNextNode* l = (PGetNextNode*)left;
+    PGetNextNode* r = (PGetNextNode*)right;
+    LAbstractNode* lp = l->prototype;
+    LAbstractNode* rp = r->prototype;
+    std::vector<std::vector<std::string>> ln = lp->fieldNames;
+    std::vector<std::vector<std::string>> rn = rp->fieldNames;
+
+    LAbstractNode* p = prototype;
+    std::ptrdiff_t lpos = lp->find_pos(((LJoinNode*)prototype)->attr1, ((LJoinNode*)prototype)->attr2);
+    std::ptrdiff_t rpos = rp->find_pos(((LJoinNode*)prototype)->attr1, ((LJoinNode*)prototype)->attr2);
+
+    ValueType vt = lp->fieldTypes[lpos];
+
+    std::pair<bool, std::vector<std::vector<Value>>> lres = l->GetNext();
+    std::pair<bool, std::vector<std::vector<Value>>> rres = r->GetNext();
+    while(lres.first) {
+        while(rres.first) {
+            join_blocks(
+                lres.second, rres.second,
+                ln, rn, lpos, rpos, vt);
+            rres = r->GetNext();
+        }
+        lres = l->GetNext();
+    }
 }
 
 void PJoinNode::Print(int indent){
