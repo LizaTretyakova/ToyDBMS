@@ -48,8 +48,8 @@ void PJoinNode::Initialize(){
   std::vector<std::vector<Value>> lres = l->GetNext();
   std::vector<std::vector<Value>> rres = r->GetNext();
   LAbstractNode* p = prototype;
-  std::ptrdiff_t lpos = lp->find_pos(((LJoinNode*)prototype)->offset1, ((LJoinNode*)prototype)->offset2);
-  std::ptrdiff_t rpos = rp->find_pos(((LJoinNode*)prototype)->offset1, ((LJoinNode*)prototype)->offset2);
+  std::ptrdiff_t lpos = lp->find_pos(((LJoinNode*)prototype)->attr1, ((LJoinNode*)prototype)->attr2);
+  std::ptrdiff_t rpos = rp->find_pos(((LJoinNode*)prototype)->attr1, ((LJoinNode*)prototype)->attr2);
 
   ValueType vt = lp->fieldTypes[lpos];
 
@@ -89,7 +89,7 @@ void PJoinNode::Print(int indent){
   for (int i = 0; i < indent; i++){
     std::cout << " ";
   }
-  std::cout << "NL-JOIN: " << ((LJoinNode*)prototype)->offset1 <<"=" << ((LJoinNode*)prototype)->offset2 << std::endl;
+  std::cout << "NL-JOIN: " << ((LJoinNode*)prototype)->attr1 <<"=" << ((LJoinNode*)prototype)->attr2 << std::endl;
   left->Print(indent + 2);
   right->Print(indent + 2);
 }

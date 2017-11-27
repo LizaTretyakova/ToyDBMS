@@ -58,7 +58,8 @@ PSelectNode::~PSelectNode(){
 }
 
 void PSelectNode::Initialize(){
-  std::string line, word;
+  std::string line;
+  std::string word;
   std::ifstream f(table.relpath);
   if(f.is_open()){
     // skipping first 4 lines

@@ -34,10 +34,12 @@
 
 class LAbstractNode{
   public:
-    LAbstractNode(LAbstractNode* left, LAbstractNode* right);
+    LAbstractNode(LAbstractNode* left, LAbstractNode* right, int block_size);
     virtual ~LAbstractNode();
     LAbstractNode* GetLeft();
     LAbstractNode* GetRight();
+    int get_block_size();
+
     // schema-related info
     std::vector<std::vector<std::string>> fieldNames;
     std::vector<ValueType> fieldTypes;
@@ -71,6 +73,7 @@ class LAbstractNode{
   protected:
     LAbstractNode* left;
     LAbstractNode* right;
+    int block_size;
 };
 
 class LCrossProductNode : public LAbstractNode{
@@ -82,26 +85,25 @@ class LCrossProductNode : public LAbstractNode{
 class LJoinNode : public LAbstractNode{
   public:
     // offsets are defined as "TableName.AttributeName" so, ensure there is no duplicates
-    LJoinNode(LAbstractNode* left, LAbstractNode* right, std::string offset1, std::string offset2, int memorylimit);
+    LJoinNode(LAbstractNode* left, LAbstractNode* right, std::string attr1, std::string attr2, int block_size);
     ~LJoinNode();   
     // attributes to perform equi-join on
-    std::string offset1, offset2;
+    std::string attr1;
+    std::string attr2;
     // maximum number of records permitted to present inside physical node
     int memorylimit;
 };
 
 class LProjectNode : public LAbstractNode{
   public:
-    // offsets to keep
     LProjectNode(LAbstractNode* child, std::vector<std::string> tokeep);
     ~LProjectNode();
-    // offsets are defined as "TableName.AttributeName" so, ensure there is no duplicates
-    std::vector<std::string> offsets;
+    std::vector<std::string> attrs;
 };
 
 class LSelectNode : public LAbstractNode{
   public:
-    LSelectNode(BaseTable& table, std::vector<Predicate> predicates);
+    LSelectNode(BaseTable& table, std::vector<Predicate> predicates, int block_size);
     // returns a reference to BaseTable
     BaseTable& GetBaseTable();
     // returns end status and next predicate (if exists)
@@ -124,22 +126,43 @@ class LUniqueNode : public LAbstractNode{
 // Physical node interface (result), should be used for automatic testing
 
 class PResultNode{
-  public:
+protected:
+    PResultNode* left;
+    PResultNode* right;
+    std::vector<std::vector<Value>> data;
+    int pos;
+    int block;
+
+    // likely unnecessary
+    std::vector<std::vector<Value> > buffer;
+    std::ifstream data_file;
+    std::string data_filename;
+    int block_pos;
+
+    // stats
+    int in_records;
+    int out_records;
+
+    void load_next_block();
+    void dump_buffer_to_file();
+
+public:
+    // used to get attribute info
+    LAbstractNode* prototype;
+
     PResultNode(PResultNode* left, PResultNode* right, LAbstractNode* p);
     virtual ~PResultNode();
     // returns number of attributes
     virtual int GetAttrNum() = 0;
     // prints tree
     virtual void Print(int indent) = 0;
-    // used to get attribute info
-    LAbstractNode* prototype;
     // returns error status and data, if possible
     virtual std::tuple<ErrCode, std::vector<Value>> GetRecord();
-  protected:
-    PResultNode* left;
-    PResultNode* right;
-    std::vector<std::vector<Value>> data;
-    int pos;
+
+    // stats
+    int get_out_records() {
+        return out_records;
+    }
 };
 
 #endif // INTERFACE_H

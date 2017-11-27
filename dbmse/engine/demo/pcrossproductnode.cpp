@@ -5,16 +5,22 @@
 
 PCrossProductNode::PCrossProductNode(PGetNextNode* left, PGetNextNode* right, LAbstractNode* p):
     PGetNextNode(left, right, p) {
-  Initialize();
+    Initialize();
 }
 
 PCrossProductNode::~PCrossProductNode() {
-  delete left;
-  delete right;
+    delete left;
+    delete right;
 }
 
 std::vector<std::vector<Value>> PCrossProductNode::GetNext() {
-  return data;
+    int block_size = prototype->get_block_size();
+    std::vector<std::vector<Value> >
+        result(min(block_size, pos % block_size));
+    for(int i = block * block_size; i < pos; ++i) {
+        result.push_back(data[i]);
+    }
+    return result;
 }
 
 void PCrossProductNode::Initialize() {
