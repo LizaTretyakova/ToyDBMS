@@ -40,6 +40,9 @@ class PSelectNode : public PGetNextNode{
 
     // stats
     double get_selectiveness() {
+        if (in_records == 0) {
+            return 0;
+        }
         return (double)out_records / in_records;
     }
 };

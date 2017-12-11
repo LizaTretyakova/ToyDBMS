@@ -25,7 +25,9 @@
 PJoinNode::PJoinNode(PGetNextNode* left, PGetNextNode* right,
                      LAbstractNode* p): PGetNextNode(left, right, p){
   pos = 0;
+  std::cerr << "before initialize" << std::endl;
   Initialize();
+  std::cerr << "after initialize" << std::endl;
 }
 
 PJoinNode::~PJoinNode(){
@@ -84,6 +86,7 @@ void PJoinNode::Initialize(){
 
     std::pair<bool, std::vector<std::vector<Value>>> lres = l->GetNext();
     std::pair<bool, std::vector<std::vector<Value>>> rres = r->GetNext();
+
     while(lres.first) {
         while(rres.first) {
             join_blocks(

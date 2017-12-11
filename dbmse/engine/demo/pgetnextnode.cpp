@@ -43,12 +43,12 @@ void PGetNextNode::Initialize(){
 // (false, ...) otherwise
 std::pair<bool, std::vector<std::vector<Value>>> PGetNextNode::GetNext() {
     int block_size = prototype->get_block_size();
+    int size = std::min(block_size, (int)data.size() - block_pos);
     block_pos = block_pos % data.size();
 
-    std::vector<std::vector<Value> >
-        result(std::min(block_size, (int)data.size() - block_pos));
-    for(; block_pos < data.size(); ++block_pos) {
-        result.push_back(data[block_pos]);
+    std::vector<std::vector<Value> > result;
+    for(int i = 0; i < size; ++i) {
+        result.push_back(data[block_pos++]);
     }
 
     return std::make_pair(block_pos == data.size(), result);
