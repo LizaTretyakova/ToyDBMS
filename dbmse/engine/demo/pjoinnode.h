@@ -28,7 +28,8 @@ class PJoinNode : public PGetNextNode {
 public:
     PJoinNode(PGetNextNode* left, PGetNextNode* right, LAbstractNode* p);
     ~PJoinNode();
-    virtual void Initialize();
+    virtual void Initialize() {}
+    virtual std::pair<bool, std::vector<std::vector<Value>>> PUnionNode::GetNext();
     virtual void Print(int indent);
 protected:
     virtual void join_blocks(

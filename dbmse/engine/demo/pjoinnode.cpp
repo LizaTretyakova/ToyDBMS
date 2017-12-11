@@ -25,9 +25,6 @@
 PJoinNode::PJoinNode(PGetNextNode* left, PGetNextNode* right,
                      LAbstractNode* p): PGetNextNode(left, right, p){
   pos = 0;
-  std::cerr << "before initialize" << std::endl;
-  Initialize();
-  std::cerr << "after initialize" << std::endl;
 }
 
 PJoinNode::~PJoinNode(){
@@ -43,6 +40,8 @@ void PJoinNode::join_blocks(
         std::ptrdiff_t lpos,
         std::ptrdiff_t rpos,
         ValueType vt) {
+    pos = 0;
+    data.clear();
     for (int i = 0; i < lres.size(); i++) {
         for (int j = 0; j < rres.size(); j++){
             bool join = vt == VT_INT ?
@@ -70,32 +69,40 @@ void PJoinNode::join_blocks(
     }
 }
 
-void PJoinNode::Initialize(){
-    PGetNextNode* l = (PGetNextNode*)left;
-    PGetNextNode* r = (PGetNextNode*)right;
-    LAbstractNode* lp = l->prototype;
-    LAbstractNode* rp = r->prototype;
-    std::vector<std::vector<std::string>> ln = lp->fieldNames;
-    std::vector<std::vector<std::string>> rn = rp->fieldNames;
+std::pair<bool, std::vector<std::vector<Value>>> PJoinNode::GetNext() {
+    if(pos >= data.size()) {
+        PGetNextNode* l = (PGetNextNode*)left;
+        PGetNextNode* r = (PGetNextNode*)right;
+        LAbstractNode* lp = l->prototype;
+        LAbstractNode* rp = r->prototype;
+        std::vector<std::vector<std::string>> ln = lp->fieldNames;
+        std::vector<std::vector<std::string>> rn = rp->fieldNames;
 
-    LAbstractNode* p = prototype;
-    std::ptrdiff_t lpos = lp->find_pos(((LJoinNode*)prototype)->attr1, ((LJoinNode*)prototype)->attr2);
-    std::ptrdiff_t rpos = rp->find_pos(((LJoinNode*)prototype)->attr1, ((LJoinNode*)prototype)->attr2);
+        LAbstractNode* p = prototype;
+        std::ptrdiff_t lpos = lp->find_pos(((LJoinNode*)prototype)->attr1, ((LJoinNode*)prototype)->attr2);
+        std::ptrdiff_t rpos = rp->find_pos(((LJoinNode*)prototype)->attr1, ((LJoinNode*)prototype)->attr2);
 
-    ValueType vt = lp->fieldTypes[lpos];
+        ValueType vt = lp->fieldTypes[lpos];
 
-    std::pair<bool, std::vector<std::vector<Value>>> lres = l->GetNext();
-    std::pair<bool, std::vector<std::vector<Value>>> rres = r->GetNext();
+        std::pair<bool, std::vector<std::vector<Value>>> lres = l->GetNext();
+        std::pair<bool, std::vector<std::vector<Value>>> rres = r->GetNext();
 
-    while(lres.first) {
-        while(rres.first) {
-            join_blocks(
-                lres.second, rres.second,
-                ln, rn, lpos, rpos, vt);
-            rres = r->GetNext();
+        while(lres.first) {
+            while(rres.first) {
+                join_blocks(
+                    lres.second, rres.second,
+                    ln, rn, lpos, rpos, vt);
+                rres = r->GetNext();
+            }
+            lres = l->GetNext();
         }
-        lres = l->GetNext();
     }
+    int size = std::min(prototype->get_block_size(),
+                        data.size() - pos);
+    std::vector<std::vector<Value>> result(size);
+    std::copy(data.begin() + pos,
+        min(data.begin() + pos + block_size, data.end()),
+        result.begin());
 }
 
 void PJoinNode::Print(int indent){

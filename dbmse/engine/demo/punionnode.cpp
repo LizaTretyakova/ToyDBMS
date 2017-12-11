@@ -10,26 +10,16 @@
 #include "punionnode.h"
 #include "../interface/basics.h"
 
-void PUnionNode::Initialize() {
+std::pair<bool, std::vector<std::vector<Value>>> PUnionNode::GetNext() {
     PGetNextNode* l = (PGetNextNode*)left;
+    std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext();
+    if (l_data.first) {
+        return l_data;
+    }
+
     PGetNextNode* r = (PGetNextNode*)right;
-
-    for(std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext();
-            l_data.first; l_data = l->GetNext()) {
-        left_records += l_data.second.size();
-
-        for(std::vector<Value> val: l_data.second) {
-            data.push_back(val);
-        }
-    }
-    for(std::pair<bool, std::vector<std::vector<Value>>> r_data = r->GetNext();
-            r_data.first; r_data = r->GetNext()) {
-        right_records += r_data.second.size();
-
-        for(std::vector<Value> val: r_data.second) {
-            data.push_back(val);
-        }
-    }
+    std::pair<bool, std::vector<std::vector<Value>>> r_data = r->GetNext();
+    return r_data; // no matter what the bool flag shows
 }
 
 PUnionNode::~PUnionNode(){

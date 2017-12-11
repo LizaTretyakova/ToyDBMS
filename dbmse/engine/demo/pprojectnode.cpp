@@ -4,34 +4,32 @@
 #include "pprojectnode.h"
 
 PProjectNode::PProjectNode(PGetNextNode* child, LAbstractNode* p): PGetNextNode(child, NULL, p){
-  Initialize();
 }
 
 PProjectNode::~PProjectNode() {
   delete left;
 }
 
-void PProjectNode::Initialize() {
+std::pair<bool, std::vector<std::vector<Value>>> PProjectNode::GetNext() {
     PGetNextNode* child = (PGetNextNode*)left;
     std::pair<bool, std::vector<std::vector<Value>>>
         child_data = child->GetNext();
     LAbstractNode* child_proto = child->prototype;
+    std::vector<std::vector<Value>> result;
 
-    while(child_data.first) {
-        for(auto row: child_data.second) {
-            std::vector<Value> tmp;
-            for(int i = 0; i < child_proto->fieldNames.size(); ++i) {
-                for(auto name: child_proto->fieldNames[i]) {
-                    if(prototype->contains_str(name)) {
-                        tmp.push_back(row[i]);
-                        break;
-                    }
+    for(auto row: child_data.second) {
+        std::vector<Value> tmp;
+        for(int i = 0; i < child_proto->fieldNames.size(); ++i) {
+            for(auto name: child_proto->fieldNames[i]) {
+                if(prototype->contains_str(name)) {
+                    tmp.push_back(row[i]);
+                    break;
                 }
             }
-            data.push_back(tmp);
         }
-        child_data = child->GetNext();
+        result.push_back(tmp);
     }
+    return std::make_pair(child_data.first, result);
 }
 
 void PProjectNode::Print(int indent){

@@ -9,7 +9,8 @@ class PUniqueNode : public PGetNextNode{
   public:
     PUniqueNode(PGetNextNode* child, LAbstractNode* p);
     ~PUniqueNode();
-    virtual void Initialize();
+    virtual void Initialize() {}
+    virtual std::pair<bool, std::vector<std::vector<Value>>> GetNext();
     // print node
     virtual void Print(int indent);
   private:

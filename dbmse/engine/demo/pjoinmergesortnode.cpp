@@ -19,6 +19,8 @@ void PJoinMergeSortNode::join_blocks(
         std::ptrdiff_t lpos,
         std::ptrdiff_t rpos,
         ValueType vt) {
+    pos = 0;
+    data.clear();
 
     int lit = 0; // left iterator
     int rit = 0; // right iterator

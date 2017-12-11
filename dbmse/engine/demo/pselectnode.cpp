@@ -55,11 +55,13 @@ PSelectNode::PSelectNode(LAbstractNode* p, std::vector<Predicate> predicate): PG
 }
 
 PSelectNode::~PSelectNode(){
+    if(f.is_open()) {
+        f.close();
+    }
 }
 
 void PSelectNode::Initialize(){
   std::string line;
-  std::string word;
   std::ifstream f(table.relpath);
   if(f.is_open()){
         // skipping first 4 lines
@@ -67,8 +69,19 @@ void PSelectNode::Initialize(){
         getline(f, line);
         getline(f, line);
         getline(f, line);
+    } else {
+        std::cout << "Unable to open file";
+    }
+}
 
-        while(getline(f, line)){
+virtual std::pair<bool, std::vector<std::vector<Value>>> PSelectNode::GetNext() {
+    int block_size = prototype->get_block_size();
+    std::string line;
+    std::string word;
+    std::vector<std::vector<Value>> result;
+    std::ifstream f(table.relpath);
+    if(f.is_open()){
+        for(int i = 0; i < block_size && getline(f, line); ++i){
             std::vector<Value> tmp;
             std::istringstream iss(line, std::istringstream::in);
             int i = 0;
@@ -92,13 +105,14 @@ void PSelectNode::Initialize(){
                 i++;
             }
             if(passes_pred) {
-                data.push_back(tmp);
+                result.push_back(tmp);
             }
         }
-        f.close();
     } else {
         std::cout << "Unable to open file";
     }
+    // TODO: if i >= block_size, start it all over again
+    return make_pair((i < block_size), result);
 }
 
 void PSelectNode::Print(int indent){

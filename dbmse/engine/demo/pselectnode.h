@@ -33,6 +33,7 @@ class PSelectNode : public PGetNextNode{
     virtual void Initialize();
     // print node
     virtual void Print(int indent);
+    virtual std::pair<bool, std::vector<std::vector<Value>> GetNext();
   private:
     BaseTable table;
     std::vector<Predicate> predicate;

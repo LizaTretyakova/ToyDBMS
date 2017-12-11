@@ -12,7 +12,6 @@
 
 PUniqueNode::PUniqueNode(PGetNextNode* child, LAbstractNode* p):
     PGetNextNode(child, NULL, p) {
-    Initialize();
 }
 
 PUniqueNode::~PUniqueNode(){
@@ -43,27 +42,28 @@ bool PUniqueNode::equals(std::vector<Value> a1, std::vector<Value> a2) {
     return true;
 }
 
-void PUniqueNode::Initialize(){
+std::pair<bool, std::vector<std::vector<Value>>> PUniqueNode::GetNext() {
     PGetNextNode* l = (PGetNextNode*)left;
-    for(std::pair<bool, std::vector<std::vector<Value>>>
-            l_data = l->GetNext();
-            l_data.first;
-            l_data = l->GetNext()) {
-        for(int i = 0; i < l_data.second.size(); ++i) {
-            bool duplicate = false;
-            for(int j = i + 1; j < l_data.second.size(); ++j) {
-                if(equals(l_data.second[i], l_data.second[j])) {
-                    duplicate = true;
-                    break;
-                }
-            }
-            std::cerr << std::endl;
-            if(!duplicate) {
-                std::vector<Value> row(l_data.second[i]);
-                data.push_back(row);
+    std::vector<std::vector<Value>> result;
+    std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext();
+    int block_size = prototype->get_block_size();
+
+    for(int i = 0; i < block_size && i < l_data.second.size(); ++i) {
+        bool duplicate = false;
+        for(int j = i + 1; j < l_data.second.size(); ++j) {
+            if(equals(l_data.second[i], l_data.second[j])) {
+                duplicate = true;
+                break;
             }
         }
+        std::cerr << std::endl;
+        if(!duplicate) {
+            std::vector<Value> row(l_data.second[i]);
+            result.push_back(row);
+        }
     }
+
+    return std::make_pair(l_data.first, result);
 }
 
 void PUniqueNode::Print(int indent){

@@ -18,6 +18,8 @@ void PJoinHashNode::join_blocks(
         std::ptrdiff_t lpos,
         std::ptrdiff_t rpos,
         ValueType vt) {
+    pos = 0;
+    data.clear();
     if(vt == VT_INT) {
         join_blocks_int(lres, rres, ln, rn, lpos, rpos);
     } else {
