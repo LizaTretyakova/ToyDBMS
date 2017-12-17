@@ -5,6 +5,7 @@
 
 PCrossProductNode::PCrossProductNode(PGetNextNode* left, PGetNextNode* right, LAbstractNode* p):
         PGetNextNode(left, right, p) {
+    PGetNextNode* l = (PGetNextNode*)left;
     for(std::pair<bool, std::vector<std::vector<Value>>>
           l_data = l->GetNext();
           l_data.first;
@@ -13,6 +14,7 @@ PCrossProductNode::PCrossProductNode(PGetNextNode* left, PGetNextNode* right, LA
             left_data.push_back(row);
         }
     }
+    in_records += left_data.size();
 }
 
 PCrossProductNode::~PCrossProductNode() {
@@ -28,14 +30,21 @@ std::pair<bool, std::vector<std::vector<Value>>> PCrossProductNode::GetNext() {
     if(pos >= left_data.size()) {
         pos= 0;
         right_data = r->GetNext();
+        if(!right_data.first) {
+            mult = 0;
+            return right_data;
+        }
+        in_records += mult * right_data.second.size();
     }
     for(auto r_row: right_data.second) {
         std::vector<Value> row(left_data[pos]);
         row.insert(row.end(), r_row.begin(), r_row.end());
         result.push_back(row);
     }
+    out_records += mult * result.size();
+    ++pos;
     return std::make_pair(
-        pos < left_data.size() || right_data.first, result);
+        (pos - 1) < left_data.size() || right_data.first, result);
 }
 
 void PCrossProductNode::Print(int indent){

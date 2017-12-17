@@ -133,15 +133,13 @@ public:
 
 class PResultNode{
 protected:
-    PResultNode* left;
-    PResultNode* right;
     std::vector<std::vector<Value>> data;
     int pos;
     int block_pos; // for GetNext()
 
     // stats
-    int in_records;
-    int out_records;
+    int in_records = 0;
+    int out_records = 0;
 
     void load_next_block();
     void dump_buffer_to_file();
@@ -161,11 +159,14 @@ public:
 
     // stats
     int get_out_records() {
-        return data.size();
+        return out_records;
     }
     int get_in_records() {
         return in_records;
     }
+
+    PResultNode* left;
+    PResultNode* right;
 };
 
 #endif // INTERFACE_H

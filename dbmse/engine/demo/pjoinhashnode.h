@@ -10,32 +10,24 @@
 class PJoinHashNode : public PJoinNode {
     public:
         PJoinHashNode(PGetNextNode* left, PGetNextNode* right, LAbstractNode* p):
-            PJoinNode(left, right, p) {}
+            PJoinNode(left, right, p) {
+            if(vt == VT_INT) {
+                for(int i = 0; i < left_data.size(); ++i) {
+                    int_table[left_data[i][lpos]].push_back(i);
+                }
+            } else {
+                for(int i = 0; i < left_data.size(); ++i) {
+                    string_table[left_data[i][lpos]].push_back(i);
+                }
+            }
+        }
+
         ~PJoinHashNode();
-        virtual void join_blocks(
-                std::vector<std::vector<Value>> lres,
-                std::vector<std::vector<Value>> rres,
-                std::vector<std::vector<std::string>> ln,
-                std::vector<std::vector<std::string>> rn,
-                std::ptrdiff_t lpos,
-                std::ptrdiff_t rpos,
-                ValueType vt);
+        virtual std::vector<std::vector<Value>> join_blocks();
         virtual void Print(int indent);
     private:
-        void join_blocks_int(
-                std::vector<std::vector<Value>> lres,
-                std::vector<std::vector<Value>> rres,
-                std::vector<std::vector<std::string>> ln,
-                std::vector<std::vector<std::string>> rn,
-                std::ptrdiff_t lpos,
-                std::ptrdiff_t rpos);
-        void join_blocks_str(
-                std::vector<std::vector<Value>> lres,
-                std::vector<std::vector<Value>> rres,
-                std::vector<std::vector<std::string>> ln,
-                std::vector<std::vector<std::string>> rn,
-                std::ptrdiff_t lpos,
-                std::ptrdiff_t rpos);
+        std::unordered_map<int, std::vector<int>> int_table;
+        std::unordered_map<std::string, std::vector<int>> string_table;
 };
 
 #endif // PJOINHASHNODE_H

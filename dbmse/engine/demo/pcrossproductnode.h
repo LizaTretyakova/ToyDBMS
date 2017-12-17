@@ -10,7 +10,7 @@ class PCrossProductNode : public PGetNextNode{
     PCrossProductNode(PGetNextNode* left, PGetNextNode* right, LAbstractNode* p);
     ~PCrossProductNode();
     virtual void Initialize() {}
-    virtual std::pair<bool, std::vector<std::vector<Value>>> PUnionNode::GetNext();
+    virtual std::pair<bool, std::vector<std::vector<Value>>> GetNext();
     virtual void Print(int indent);
 
 protected:

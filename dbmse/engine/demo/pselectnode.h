@@ -30,14 +30,16 @@ class PSelectNode : public PGetNextNode{
     PSelectNode(LAbstractNode* p);
     PSelectNode(LAbstractNode* p, std::vector<Predicate> predicates);
     ~PSelectNode();
-    virtual void Initialize();
+    virtual void Initialize() {}
     // print node
     virtual void Print(int indent);
-    virtual std::pair<bool, std::vector<std::vector<Value>> GetNext();
+    virtual std::pair<bool, std::vector<std::vector<Value>>> GetNext();
   private:
     BaseTable table;
     std::vector<Predicate> predicate;
     int pos;
+    std::streampos file_start;
+    std::streampos file_pos;
 
     // stats
     double get_selectiveness() {

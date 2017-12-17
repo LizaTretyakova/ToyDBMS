@@ -9,16 +9,12 @@
 class PJoinMergeSortNode : public PJoinNode {
   public:
     PJoinMergeSortNode(PGetNextNode* left, PGetNextNode* right, LAbstractNode* p):
-        PJoinNode(left, right, p) {}
+        PJoinNode(left, right, p) {
+        std::sort(left_data.begin(), left_data.end());
+        pos = left_data.size();
+    }
     ~PJoinMergeSortNode();
-    virtual void join_blocks(
-            std::vector<std::vector<Value>> lres,
-            std::vector<std::vector<Value>> rres,
-            std::vector<std::vector<std::string>> ln,
-            std::vector<std::vector<std::string>> rn,
-            std::ptrdiff_t lpos,
-            std::ptrdiff_t rpos,
-            ValueType vt);
+    virtual std::vector<std::vector<Value>> join_blocks();
     virtual void Print(int indent);
 };
 

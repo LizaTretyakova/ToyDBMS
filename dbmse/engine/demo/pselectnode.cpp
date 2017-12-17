@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <ostream>
 #include <fstream>
 #include <string>
 
@@ -40,48 +41,53 @@ PSelectNode::PSelectNode(LAbstractNode* p): PGetNextNode() {
     }
 
     this->prototype = p;
-    pos = 0;
-    data.clear();
-    Initialize();
-}
 
-PSelectNode::PSelectNode(LAbstractNode* p, std::vector<Predicate> predicate): PGetNextNode(){
-  this->table = ((LSelectNode*)p)->GetBaseTable();
-  this->predicate = predicate;
-  this->prototype = p;
-  pos = 0;
-  data.clear();
-  Initialize();
-}
-
-PSelectNode::~PSelectNode(){
-    if(f.is_open()) {
-        f.close();
-    }
-}
-
-void PSelectNode::Initialize(){
-  std::string line;
-  std::ifstream f(table.relpath);
-  if(f.is_open()){
+    std::string line;
+    std::ifstream f(table.relpath);
+    if(f.is_open()){
         // skipping first 4 lines
         getline(f, line);
         getline(f, line);
         getline(f, line);
         getline(f, line);
+        file_start = file_pos = f.tellg();
     } else {
-        std::cout << "Unable to open file";
+      std::cout << "Unable to open file";
     }
 }
 
-virtual std::pair<bool, std::vector<std::vector<Value>>> PSelectNode::GetNext() {
+PSelectNode::PSelectNode(LAbstractNode* p, std::vector<Predicate> predicate): PGetNextNode() {
+    this->table = ((LSelectNode*)p)->GetBaseTable();
+    this->predicate = predicate;
+    this->prototype = p;
+
+    std::string line;
+    std::ifstream f(table.relpath);
+    if(f.is_open()){
+        // skipping first 4 lines
+        getline(f, line);
+        getline(f, line);
+        getline(f, line);
+        getline(f, line);
+        file_start = file_pos = f.tellg();
+    } else {
+      std::cout << "Unable to open file";
+    }
+}
+
+PSelectNode::~PSelectNode(){
+}
+
+std::pair<bool, std::vector<std::vector<Value>>> PSelectNode::GetNext() {
     int block_size = prototype->get_block_size();
     std::string line;
     std::string word;
     std::vector<std::vector<Value>> result;
+    int cnt = 0;
     std::ifstream f(table.relpath);
+    f.seekg(file_pos);
     if(f.is_open()){
-        for(int i = 0; i < block_size && getline(f, line); ++i){
+        for(; cnt < block_size && getline(f, line); ++cnt) {
             std::vector<Value> tmp;
             std::istringstream iss(line, std::istringstream::in);
             int i = 0;
@@ -111,8 +117,16 @@ virtual std::pair<bool, std::vector<std::vector<Value>>> PSelectNode::GetNext() 
     } else {
         std::cout << "Unable to open file";
     }
-    // TODO: if i >= block_size, start it all over again
-    return make_pair((i < block_size), result);
+    if(cnt == 0) {
+        file_pos = file_start;
+        mult = 0;
+        return std::make_pair(false, result);
+    } else {
+        file_pos = f.tellg();
+    }
+    in_records += mult * result.size();
+    out_records += mult * result.size();
+    return std::make_pair(true, result);
 }
 
 void PSelectNode::Print(int indent){

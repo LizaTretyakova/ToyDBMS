@@ -47,6 +47,7 @@ std::pair<bool, std::vector<std::vector<Value>>> PUniqueNode::GetNext() {
     std::vector<std::vector<Value>> result;
     std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext();
     int block_size = prototype->get_block_size();
+    in_records += mult * l_data.second.size();
 
     for(int i = 0; i < block_size && i < l_data.second.size(); ++i) {
         bool duplicate = false;
@@ -63,6 +64,10 @@ std::pair<bool, std::vector<std::vector<Value>>> PUniqueNode::GetNext() {
         }
     }
 
+    out_records += mult * result.size();
+    if(!l_data.first) {
+        mult = 0;
+    }
     return std::make_pair(l_data.first, result);
 }
 

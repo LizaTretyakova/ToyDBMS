@@ -34,6 +34,7 @@ class PGetNextNode : public PResultNode{
     virtual int GetAttrNum();
   protected:
     int block_pos;
+    int mult = 1;
   private:
 
 };

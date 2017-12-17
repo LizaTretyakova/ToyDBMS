@@ -29,19 +29,23 @@ public:
     PJoinNode(PGetNextNode* left, PGetNextNode* right, LAbstractNode* p);
     ~PJoinNode();
     virtual void Initialize() {}
-    virtual std::pair<bool, std::vector<std::vector<Value>>> PUnionNode::GetNext();
+    virtual std::pair<bool, std::vector<std::vector<Value>>> GetNext();
     virtual void Print(int indent);
 protected:
-    virtual void join_blocks(
-        std::vector<std::vector<Value>> lres,
-        std::vector<std::vector<Value>> rres,
-        std::vector<std::vector<std::string>> ln,
-        std::vector<std::vector<std::string>> rn,
-        std::ptrdiff_t lpos,
-        std::ptrdiff_t rpos,
-        ValueType vt);
-  private:
-    int pos;
+    virtual std::vector<std::vector<Value> > join_blocks();
+
+    std::vector<std::vector<Value>> left_data;
+    std::vector<std::vector<Value>> right_data;
+
+    PGetNextNode* l;
+    PGetNextNode* r;
+    LAbstractNode* lp;
+    LAbstractNode* rp;
+    std::vector<std::vector<std::string>> ln;
+    std::vector<std::vector<std::string>> rn;
+    std::ptrdiff_t lpos;
+    std::ptrdiff_t rpos;
+    ValueType vt;
 };
 
 #endif // PJOINNODE_H

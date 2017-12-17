@@ -11,7 +11,7 @@ public:
         PGetNextNode(left, right, p), left_records(0), right_records(0) {}
     ~PUnionNode();
     virtual void Initialize() {}
-    virtual std::pair<bool, std::vector<std::vector<Value>>> PUnionNode::GetNext();
+    virtual std::pair<bool, std::vector<std::vector<Value>>> GetNext();
     // print node
     virtual void Print(int indent);
 

@@ -17,6 +17,12 @@ std::pair<bool, std::vector<std::vector<Value>>> PProjectNode::GetNext() {
     LAbstractNode* child_proto = child->prototype;
     std::vector<std::vector<Value>> result;
 
+    if(!child_data.first) {
+        mult = 0;
+        return child_data;
+    }
+
+    in_records += mult * child_data.second.size();
     for(auto row: child_data.second) {
         std::vector<Value> tmp;
         for(int i = 0; i < child_proto->fieldNames.size(); ++i) {
@@ -29,6 +35,7 @@ std::pair<bool, std::vector<std::vector<Value>>> PProjectNode::GetNext() {
         }
         result.push_back(tmp);
     }
+    out_records += mult * result.size();
     return std::make_pair(child_data.first, result);
 }
 
