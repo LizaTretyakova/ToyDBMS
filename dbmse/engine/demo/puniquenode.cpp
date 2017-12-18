@@ -45,30 +45,39 @@ bool PUniqueNode::equals(std::vector<Value> a1, std::vector<Value> a2) {
 std::pair<bool, std::vector<std::vector<Value>>> PUniqueNode::GetNext() {
     PGetNextNode* l = (PGetNextNode*)left;
     std::vector<std::vector<Value>> result;
-    std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext();
-    int block_size = prototype->get_block_size();
-    in_records += mult * l_data.second.size();
+    int req = block_size;
+    int res_size = std::min(req, block_size);
 
-    for(int i = 0; i < block_size && i < l_data.second.size(); ++i) {
-        bool duplicate = false;
-        for(int j = i + 1; j < l_data.second.size(); ++j) {
-            if(equals(l_data.second[i], l_data.second[j])) {
-                duplicate = true;
-                break;
+    result.insert(result.end(), data.begin() + block_pos, std::min(data.end(), data.begin() + block_pos + res_size));
+    block_pos = std::min(data.size(), block_pos + res_size);
+
+    while(result.size < res_size && !finished) {
+        std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext(block_size);
+        in_records += mult * l_data.second.size();
+        for(int i; i < l_data.second.size(); ++i) {
+            bool duplicate = false;
+            for(int j = 0; j < data.size(); ++j) {
+                if(equals(l_data.second[i], data[j])) {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if(!duplicate) {
+                if(result.size() < res_size) {
+                    result.push_back(l_data.second[i]);
+                    ++block_pos;
+                }
+                data.push_back(l_data.second[i]);
             }
         }
-        std::cerr << std::endl;
-        if(!duplicate) {
-            std::vector<Value> row(l_data.second[i]);
-            result.push_back(row);
-        }
+        finished = !l_data.first;
     }
 
     out_records += mult * result.size();
-    if(!l_data.first) {
+    if(finished) {
         mult = 0;
     }
-    return std::make_pair(l_data.first, result);
+    return std::make_pair(!finished || result.size() > 0, result);
 }
 
 void PUniqueNode::Print(int indent){

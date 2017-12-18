@@ -136,6 +136,16 @@ protected:
     std::vector<std::vector<Value>> data;
     int pos;
     int block_pos; // for GetNext()
+    int block_size;
+    bool finished = false;
+    virtual void rewind() {
+        finished = false;
+        data.clear();
+        block_pos = 0;
+    }
+    virtual void finish() {
+        finished = true;
+    }
 
     // stats
     int in_records = 0;

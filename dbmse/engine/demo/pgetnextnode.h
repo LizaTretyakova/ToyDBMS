@@ -33,10 +33,7 @@ class PGetNextNode : public PResultNode{
     // get number of attributes
     virtual int GetAttrNum();
   protected:
-    int block_pos;
     int mult = 1;
-  private:
-
 };
 
 #endif // PGETNEXTNODE_H

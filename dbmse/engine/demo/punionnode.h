@@ -19,6 +19,7 @@ protected:
     int left_records;
     int right_records;
     bool the_end = false;
+    bool doing_first = true;
 };
 
 #endif // PUNIONNODE_H

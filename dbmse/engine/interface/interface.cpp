@@ -278,7 +278,7 @@ PResultNode::PResultNode(PResultNode* left, PResultNode* right, LAbstractNode* p
     this->left = left;
     this->right = right;
     this->prototype = p;
-
+    this->block_size = p->block_size;
 //    struct timeval tp;
 //    gettimeofday(&tp, NULL);
 //    long int ms =
