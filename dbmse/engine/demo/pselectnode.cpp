@@ -93,10 +93,11 @@ std::pair<bool, std::vector<std::vector<Value>>> PSelectNode::GetNext() {
     std::string word;
     std::vector<std::vector<Value>> result;
     int cnt = 0;
+    int req = block_size;
     std::ifstream f(table.relpath);
     f.seekg(file_pos);
-    if(f.is_open()){
-        for(; cnt < block_size && getline(f, line); ++cnt) {
+    if(f.is_open() && !finished) {
+        for(; result.size() < std::min(req, block_size) && getline(f, line); ++cnt) {
             std::vector<Value> tmp;
             std::istringstream iss(line, std::istringstream::in);
             int i = 0;
@@ -127,15 +128,22 @@ std::pair<bool, std::vector<std::vector<Value>>> PSelectNode::GetNext() {
         std::cout << "Unable to open file";
     }
     if(cnt == 0) {
-        file_pos = file_start;
+//        file_pos = file_start;
+        finish();
         mult = 0;
         return std::make_pair(false, result);
-    } else {
-        file_pos = f.tellg();
     }
+    file_pos = f.tellg();
     in_records += mult * result.size();
     out_records += mult * result.size();
     return std::make_pair(true, result);
+}
+
+void PSelectNode::rewind() {
+    finished = false;
+    data.clear();
+    block_pos = 0;
+    file_pos = file_start;
 }
 
 void PSelectNode::Print(int indent){

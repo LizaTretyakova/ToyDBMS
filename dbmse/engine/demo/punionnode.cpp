@@ -11,27 +11,14 @@
 #include "../interface/basics.h"
 
 std::pair<bool, std::vector<std::vector<Value>>> PUnionNode::GetNext() {
-//    if(doing_first) {
-//		PGetNextNode* l = (PGetNextNode*)left;
-//		std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext();
-//		if (l_data.first) {
-//		    in_records += mult * l_data.second.size();
-//		    out_records += mult * l_data.second.size();
-//		    doing_first = false;
-//		    return l_data;
-//		}
-//    }
-//    PGetNextNode* r = (PGetNextNode*)right;
-//    std::pair<bool, std::vector<std::vector<Value>>> r_data = r->GetNext();
-//    in_records += mult * r_data.second.size();
-//    out_records += mult * r_data.second.size();
-//    if(!r_data.first) {
-//	mult = 0;
-//	doing_first = true;
-//    }
-//    return r_data; // no matter what the bool flag shows
     int req = block_size;
-    while(data.size() < block_size && !finished) {
+
+    // Invariant: fill data 'till it's full
+    // (important: 'full' == enough entries to give,
+    // but we take from the underlying levels by chunks
+    // of our block_size, no matter what's required)
+    // and then give them further up, emptying data again.
+    while(data.size() < std::min(req, block_size) && !finished) {
         if(doing_first) {
             PGetNextNode* l = (PGetNextNode*)left;
             std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext(); // (block_size);
@@ -52,7 +39,7 @@ std::pair<bool, std::vector<std::vector<Value>>> PUnionNode::GetNext() {
                 // fill the buffer
                 data.insert(data.end(), r_data.second.begin(), r_data.second.end());
             } else {
-                finish();
+                finish(); // finished = true;
                 doing_first = true;
                 mult = 0;
             }

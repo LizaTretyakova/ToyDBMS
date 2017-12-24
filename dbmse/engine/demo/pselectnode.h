@@ -34,6 +34,7 @@ class PSelectNode : public PGetNextNode{
     // print node
     virtual void Print(int indent);
     virtual std::pair<bool, std::vector<std::vector<Value>>> GetNext();
+    virtual void rewind();
   private:
     BaseTable table;
     std::vector<Predicate> predicate;

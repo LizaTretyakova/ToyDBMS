@@ -4,7 +4,7 @@
 #include "pprojectnode.h"
 
 PProjectNode::PProjectNode(PGetNextNode* child, LAbstractNode* p): PGetNextNode(child, NULL, p){
-    std::cerr << "select\n";
+    child_proto = child->prototype;
 }
 
 PProjectNode::~PProjectNode() {
@@ -12,19 +12,32 @@ PProjectNode::~PProjectNode() {
 }
 
 std::pair<bool, std::vector<std::vector<Value>>> PProjectNode::GetNext() {
-    PGetNextNode* child = (PGetNextNode*)left;
-    std::pair<bool, std::vector<std::vector<Value>>>
-        child_data = child->GetNext();
-    LAbstractNode* child_proto = child->prototype;
-    std::vector<std::vector<Value>> result;
+    int req = block_size;
 
-    if(!child_data.first) {
-        mult = 0;
-        return child_data;
+    // Invariant: fill data 'till it's full
+    // (important: 'full' == enough entries to give,
+    // but we take from the underlying levels by chunks
+    // of our block_size, no matter what's required)
+    // and then give them further up, emptying data again.
+    int res_size = std::min(req, block_size);
+    while(data.size() < res_size && !finished) {
+        PGetNextNode* l = (PGetNextNode*)left;
+        std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext(); // (block_size);
+        if (l_data.first) {
+           in_records += mult * l_data.second.size();
+           out_records += mult * l_data.second.size();
+           // fill the buffer
+           data.insert(data.end(), l_data.second.begin(), l_data.second.end());
+        } else {
+            finish(); // aka finished = true;
+            mult = 0;
+        }
     }
 
-    in_records += mult * child_data.second.size();
-    for(auto row: child_data.second) {
+    std::vector<std::vector<Value>> result;
+    int leftover = std::max(0, (int)data.size() - res_size);
+    for(int it = leftover; it < data.size(); ++it) {
+        std::vector<Value> row = data[it];
         std::vector<Value> tmp;
         for(int i = 0; i < child_proto->fieldNames.size(); ++i) {
             for(auto name: child_proto->fieldNames[i]) {
@@ -37,7 +50,40 @@ std::pair<bool, std::vector<std::vector<Value>>> PProjectNode::GetNext() {
         result.push_back(tmp);
     }
     out_records += mult * result.size();
-    return std::make_pair(child_data.first, result);
+    data.resize(leftover);
+    return std::make_pair(result.size() != 0, result);
+
+
+
+//    PGetNextNode* child = (PGetNextNode*)left;
+//    LAbstractNode* child_proto = child->prototype;
+//    std::vector<std::vector<Value>> result;
+
+    // TODO: check if there are any leftovers in the data
+
+    // in case our block size is big and our parent's -- small enough,
+    // this part may not be invoked for several interations
+//    std::pair<bool, std::vector<std::vector<Value>>> child_data = child->GetNext();
+//    if(!child_data.first) {
+//        mult = 0;
+//        return child_data;
+//    }
+
+//    in_records += mult * child_data.second.size();
+//    for(auto row: child_data.second) {
+//        std::vector<Value> tmp;
+//        for(int i = 0; i < child_proto->fieldNames.size(); ++i) {
+//            for(auto name: child_proto->fieldNames[i]) {
+//                if(prototype->contains_str(name)) {
+//                    tmp.push_back(row[i]);
+//                    break;
+//                }
+//            }
+//        }
+//        result.push_back(tmp);
+//    }
+//    out_records += mult * result.size();
+//    return std::make_pair(child_data.first, result);
 }
 
 void PProjectNode::Print(int indent){

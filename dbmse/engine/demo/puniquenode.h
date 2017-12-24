@@ -13,6 +13,9 @@ class PUniqueNode : public PGetNextNode{
     virtual std::pair<bool, std::vector<std::vector<Value>>> GetNext();
     // print node
     virtual void Print(int indent);
+    // because it's useless to unset `finished` and `data`
+    // in case of this node
+//    virtual void rewind();
   private:
     bool equals(std::vector<Value> a1, std::vector<Value> a2);
 };

@@ -138,13 +138,21 @@ protected:
     int block_pos; // for GetNext()
     int block_size;
     bool finished = false;
+
+    virtual void finish() {
+        finished = true;
+    }
+
     virtual void rewind() {
         finished = false;
         data.clear();
         block_pos = 0;
-    }
-    virtual void finish() {
-        finished = true;
+        if(left != NULL) {
+            left->rewind();
+        }
+        if(right != NULL) {
+            right->rewind();
+        }
     }
 
     // stats

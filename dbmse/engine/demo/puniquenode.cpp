@@ -48,9 +48,11 @@ std::pair<bool, std::vector<std::vector<Value>>> PUniqueNode::GetNext() {
     int req = block_size;
     int res_size = std::min(req, block_size);
 
+    // if there's something left in the storage, take it
     result.insert(result.end(), data.begin() + block_pos, std::min(data.end(), data.begin() + block_pos + res_size));
     block_pos = std::min((int)data.size(), block_pos + res_size);
 
+    // while we are not full and still have entries
     while(result.size() < res_size && !finished) {
         std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext(); // (block_size);
         in_records += mult * l_data.second.size();
