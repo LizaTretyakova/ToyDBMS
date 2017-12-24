@@ -52,38 +52,6 @@ std::pair<bool, std::vector<std::vector<Value>>> PProjectNode::GetNext() {
     out_records += mult * result.size();
     data.resize(leftover);
     return std::make_pair(result.size() != 0, result);
-
-
-
-//    PGetNextNode* child = (PGetNextNode*)left;
-//    LAbstractNode* child_proto = child->prototype;
-//    std::vector<std::vector<Value>> result;
-
-    // TODO: check if there are any leftovers in the data
-
-    // in case our block size is big and our parent's -- small enough,
-    // this part may not be invoked for several interations
-//    std::pair<bool, std::vector<std::vector<Value>>> child_data = child->GetNext();
-//    if(!child_data.first) {
-//        mult = 0;
-//        return child_data;
-//    }
-
-//    in_records += mult * child_data.second.size();
-//    for(auto row: child_data.second) {
-//        std::vector<Value> tmp;
-//        for(int i = 0; i < child_proto->fieldNames.size(); ++i) {
-//            for(auto name: child_proto->fieldNames[i]) {
-//                if(prototype->contains_str(name)) {
-//                    tmp.push_back(row[i]);
-//                    break;
-//                }
-//            }
-//        }
-//        result.push_back(tmp);
-//    }
-//    out_records += mult * result.size();
-//    return std::make_pair(child_data.first, result);
 }
 
 void PProjectNode::Print(int indent){
