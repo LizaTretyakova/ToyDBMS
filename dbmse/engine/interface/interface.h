@@ -158,7 +158,7 @@ public:
     // used to get attribute info
     LAbstractNode* prototype;
 
-    PResultNode(PResultNode* left, PResultNode* right, LAbstractNode* p);
+    PResultNode(PResultNode* left, PResultNode* right, LAbstractNode* p, int block_size);
     virtual ~PResultNode();
     // returns number of attributes
     virtual int GetAttrNum() = 0;

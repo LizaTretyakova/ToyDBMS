@@ -49,10 +49,10 @@ std::pair<bool, std::vector<std::vector<Value>>> PUniqueNode::GetNext() {
     int res_size = std::min(req, block_size);
 
     result.insert(result.end(), data.begin() + block_pos, std::min(data.end(), data.begin() + block_pos + res_size));
-    block_pos = std::min(data.size(), block_pos + res_size);
+    block_pos = std::min((int)data.size(), block_pos + res_size);
 
-    while(result.size < res_size && !finished) {
-        std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext(block_size);
+    while(result.size() < res_size && !finished) {
+        std::pair<bool, std::vector<std::vector<Value>>> l_data = l->GetNext(); // (block_size);
         in_records += mult * l_data.second.size();
         for(int i; i < l_data.second.size(); ++i) {
             bool duplicate = false;

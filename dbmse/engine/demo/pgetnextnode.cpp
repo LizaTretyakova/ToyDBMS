@@ -22,18 +22,14 @@
 
 #include "pgetnextnode.h"
 
-PGetNextNode::PGetNextNode():
-    PResultNode(NULL, NULL, NULL), block_pos(0) {
-  Initialize();
-}
+PGetNextNode::PGetNextNode(): PResultNode(NULL, NULL, NULL, 0) {}
 
+// source _must_not_ be NULL
 PGetNextNode::PGetNextNode(
         PResultNode* left,
         PResultNode* right,
         LAbstractNode* source):
-    PResultNode(left, right, source), block_pos(0) {
-  Initialize();
-}
+    PResultNode(left, right, source, source->get_block_size()) {}
 
 void PGetNextNode::Initialize(){
   return;

@@ -36,31 +36,46 @@
 // Here be rewriter and optimizer
 PResultNode* QueryFactory(LAbstractNode* node){
     if (dynamic_cast<LSelectNode*>(node) != NULL){
-        return new PSelectNode((LSelectNode*)node);
+        std::cerr << "[QueryFactory] P/LSelectNode" << std::endl;
+        std::cerr << node << std::endl;
+        return new PSelectNode(node);
+//        return new PSelectNode((LSelectNode*)node);
     } else if (dynamic_cast<LJoinNode*>(node) != NULL){
+        std::cerr << "[QueryFactory] P/LJoinNode" << std::endl;
+
         PGetNextNode* lres = (PGetNextNode*)QueryFactory(node->GetLeft());
         PGetNextNode* rres = (PGetNextNode*)QueryFactory(node->GetRight());
 
         return new PJoinNode(lres, rres, node);
     } else if (dynamic_cast<LCrossProductNode*>(node) != NULL) {
+        std::cerr << "[QueryFactory] P/LCrossProductNode" << std::endl;
+
         PGetNextNode* lres = (PGetNextNode*)QueryFactory(node->GetLeft());
         PGetNextNode* rres = (PGetNextNode*)QueryFactory(node->GetRight());
 
         return new PCrossProductNode(lres, rres, node);
     } else if (dynamic_cast<LProjectNode*>(node) != NULL) {
+        std::cerr << "[QueryFactory] P/LProjectNode" << std::endl;
+
         PGetNextNode* cres = (PGetNextNode*)QueryFactory(node->GetLeft());
 
         return new PProjectNode(cres, node);
     } else if (dynamic_cast<LUnionNode*>(node) != NULL) {
+        std::cerr << "[QueryFactory] P/LUnionNode" << std::endl;
+
         PGetNextNode* lres = (PGetNextNode*)QueryFactory(node->GetLeft());
         PGetNextNode* rres = (PGetNextNode*)QueryFactory(node->GetRight());
 
         return new PUnionNode(lres, rres, node);
     } else if (dynamic_cast<LUniqueNode*>(node) != NULL) {
+        std::cerr << "[QueryFactory] P/LUniqueNode" << std::endl;
+
         PGetNextNode* cres = (PGetNextNode*)QueryFactory(node->GetLeft());
 
         return new PUniqueNode(cres, node);
     }
+
+    std::cerr << "[QueryFactory] Node not found" << std::endl;
     return NULL;
 }
 
@@ -118,7 +133,9 @@ void print_stats(PResultNode* q, int indent) {
 
 void test_it_with_fire(LAbstractNode* n, std::string s) {
     std::cout << std::endl << s << std::endl;
+    std::cerr << "[Test] before building query" << std::endl;
     PResultNode* q = QueryFactory(n);
+    std::cerr << "[Test] query built";
     q->Print(0);
     ExecuteQuery(q);
     print_stats(q, 0);

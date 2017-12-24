@@ -274,11 +274,11 @@ LUniqueNode::~LUniqueNode(){
 
 /* Physical nodes*/
 
-PResultNode::PResultNode(PResultNode* left, PResultNode* right, LAbstractNode* p){
+PResultNode::PResultNode(PResultNode* left, PResultNode* right, LAbstractNode* p, int block_size){
     this->left = left;
     this->right = right;
     this->prototype = p;
-    this->block_size = p->block_size;
+    this->block_size = block_size;
 //    struct timeval tp;
 //    gettimeofday(&tp, NULL);
 //    long int ms =

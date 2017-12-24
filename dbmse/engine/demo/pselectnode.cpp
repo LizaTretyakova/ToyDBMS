@@ -29,18 +29,25 @@
 
 #include "pselectnode.h"
 
-PSelectNode::PSelectNode(){}
+PSelectNode::PSelectNode(){
+//    std::cerr << "[PSelectNode0] constructor empty" << std::endl;
+}
 
-PSelectNode::PSelectNode(LAbstractNode* p): PGetNextNode() {
+PSelectNode::PSelectNode(LAbstractNode* p): PGetNextNode(NULL, NULL, p) {
+//    std::cerr << "[PSelectNode] enter constructor" << std::endl;
+
     this->table = ((LSelectNode*)p)->GetBaseTable();
+//    std::cerr << "[PSelectNode] got base table" << std::endl;
 
     std::tuple<int, Predicate> tmp_p = ((LSelectNode*)p)->GetNextPredicate();
     while(std::get<0>(tmp_p) != 1) {
         this->predicate.push_back(std::get<1>(tmp_p));
         tmp_p = ((LSelectNode*)p)->GetNextPredicate();
     }
+//    std::cerr << "[PSelectNode] set predicates" << std::endl;
 
     this->prototype = p;
+//    std::cerr << "[PSelectNode] set prototype" << std::endl;
 
     std::string line;
     std::ifstream f(table.relpath);
@@ -54,9 +61,12 @@ PSelectNode::PSelectNode(LAbstractNode* p): PGetNextNode() {
     } else {
       std::cout << "Unable to open file";
     }
+//    std::cerr << "[PSelectNode] finished" << std::endl;
 }
 
-PSelectNode::PSelectNode(LAbstractNode* p, std::vector<Predicate> predicate): PGetNextNode() {
+PSelectNode::PSelectNode(LAbstractNode* p, std::vector<Predicate> predicate): PGetNextNode(NULL, NULL, p) {
+//    std::cerr << "[PSelectNode2] entered" << std::endl;
+
     this->table = ((LSelectNode*)p)->GetBaseTable();
     this->predicate = predicate;
     this->prototype = p;
@@ -79,7 +89,6 @@ PSelectNode::~PSelectNode(){
 }
 
 std::pair<bool, std::vector<std::vector<Value>>> PSelectNode::GetNext() {
-    int block_size = prototype->get_block_size();
     std::string line;
     std::string word;
     std::vector<std::vector<Value>> result;

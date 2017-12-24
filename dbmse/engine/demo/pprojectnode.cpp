@@ -4,6 +4,7 @@
 #include "pprojectnode.h"
 
 PProjectNode::PProjectNode(PGetNextNode* child, LAbstractNode* p): PGetNextNode(child, NULL, p){
+    std::cerr << "select\n";
 }
 
 PProjectNode::~PProjectNode() {
