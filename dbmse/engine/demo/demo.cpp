@@ -392,4 +392,28 @@ int main(){
             "JOIN table1 ON id == id\n", exp);
         delete uniq;
     }
+
+    {
+        BaseTable bt1 = BaseTable("table1");
+        Predicate p1(PT_EQUALS, VT_INT, 0, 3, "");
+        Predicate p2(PT_GREATERTHAN, VT_INT, 0, 3, "");
+        Predicate p3(PT_EQUALS, VT_INT, 0, -1, "");
+        Predicate p4(PT_GREATERTHAN, VT_INT, 0, -1, "");
+        LAbstractNode* n1 = new LSelectNode(bt1, {p1}, 100);
+        LAbstractNode* n2 = new LSelectNode(bt1, {p2}, 100);
+        LAbstractNode* n3 = new LSelectNode(bt1, {p3}, 100);
+        LAbstractNode* n4 = new LSelectNode(bt1, {p4}, 100);
+        LAbstractNode* u1 = new LUnionNode(n1, n3); // right empty
+        LAbstractNode* u2 = new LUnionNode(n4, n2); // left empty
+        LAbstractNode* u3 = new LUnionNode(u1, u2); // both filled
+
+        std::vector<std::vector<Value>> exp = {
+            {Value(3), Value("tres"), Value(23), Value(4)},
+            {Value(0), Value("cero"), Value(100), Value(4)},
+            {Value(1), Value("uno"), Value(55), Value(1)},
+            {Value(2), Value("dos"), Value(25), Value(2)}
+        };
+
+        test_it_with_fire(u3, "UNION SELECTx4", exp);
+    }
 }
