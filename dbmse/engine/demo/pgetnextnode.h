@@ -34,6 +34,25 @@ class PGetNextNode : public PResultNode{
     virtual int GetAttrNum();
   protected:
     int mult = 1;
+
+    std::pair<bool, std::vector<std::vector<Value>>> form_result(int req) {
+        std::cout << "req: " << req
+                  << " vs data size: " << data.size()
+                  << std::endl;
+        int res_size = std::min(req, (int)data.size());
+        std::cout << "final res_size: " << res_size << std::endl;
+        std::vector<std::vector<Value>> result;
+        result.insert(result.end(), data.end() - res_size, data.end());
+        std::cout << "result.size(): " << result.size() << std::endl;
+        data.resize(data.size() - res_size);
+
+        out_records += mult * result.size();
+        if(finished) {
+           mult = 0;
+        }
+
+        return make_pair(!finished || result.size() > 0, result);
+    }
 };
 
 #endif // PGETNEXTNODE_H

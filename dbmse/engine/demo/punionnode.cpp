@@ -45,11 +45,12 @@ std::pair<bool, std::vector<std::vector<Value>>> PUnionNode::GetNext() {
             }
         }
     }
-    int res_size = std::min(req, (int)data.size());
-    std::vector<std::vector<Value>> result;
-    result.insert(result.end(), data.end() - res_size, data.end());
-    data.resize(data.size() - res_size);
-    return make_pair(!finished || result.size() > 0, result);
+//    int res_size = std::min(req, (int)data.size());
+//    std::vector<std::vector<Value>> result;
+//    result.insert(result.end(), data.end() - res_size, data.end());
+//    data.resize(data.size() - res_size);
+//    return make_pair(!finished || result.size() > 0, result);
+    return form_result(req);
 }
 
 PUnionNode::~PUnionNode(){

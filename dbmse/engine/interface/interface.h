@@ -143,18 +143,6 @@ protected:
         finished = true;
     }
 
-    virtual void rewind() {
-        finished = false;
-        data.clear();
-        block_pos = 0;
-        if(left != NULL) {
-            left->rewind();
-        }
-        if(right != NULL) {
-            right->rewind();
-        }
-    }
-
     // stats
     int in_records = 0;
     int out_records = 0;
@@ -181,6 +169,18 @@ public:
     }
     int get_in_records() {
         return in_records;
+    }
+
+    virtual void rewind() {
+        finished = false;
+        data.clear();
+        block_pos = 0;
+        if(left != NULL) {
+            left->rewind();
+        }
+        if(right != NULL) {
+            right->rewind();
+        }
     }
 
     PResultNode* left;

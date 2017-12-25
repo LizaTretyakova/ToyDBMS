@@ -97,7 +97,9 @@ std::vector<std::vector<Value>> ExecuteQuery(PResultNode* query){
             }
             std::cout << std::endl;
         }
+        std::cout << "***tmp.size(): " << tmp.second.size() << std::endl;
         tmp = p->GetNext();
+        std::cout << "***tmp.first: " << tmp.first << std::endl;
     }
     return res;
 }
@@ -149,6 +151,22 @@ void print_stats(PResultNode* q, int indent) {
     }
 }
 
+void print_res(std::vector<std::vector<Value>> v) {
+    for(int i = 0; i < v.size(); ++i) {
+        for(int j = 0; j < v[i].size(); ++j) {
+            switch(v[i][j].vtype) {
+            case VT_INT:
+                std::cout << v[i][j].vint << "\t";
+                break;
+            case VT_STRING:
+                std::cout << v[i][j].vstr << "\t";
+                break;
+            }
+        }
+        std::cout << std::endl;
+    }
+}
+
 void test_it_with_fire(LAbstractNode* n, std::string s, std::vector<std::vector<Value>> exp) {
     std::cout << std::endl << s << std::endl;
     std::cerr << "[Test] before building query" << std::endl;
@@ -156,7 +174,11 @@ void test_it_with_fire(LAbstractNode* n, std::string s, std::vector<std::vector<
     std::cerr << "[Test] query built";
     q->Print(0);
     std::vector<std::vector<Value>> act = ExecuteQuery(q);
-    assert(are_equal(exp, act));
+    if(!are_equal(exp, act)) {
+        std::cout << "\033[31mWRONG\033[0m" << std::endl;
+        print_res(act);
+        assert(false);
+    }
     std::cout << "\033[32mOK\033[0m" << std::endl;
     print_stats(q, 0);
     delete q;
@@ -199,7 +221,11 @@ int main(){
             {Value("cuatro"), Value(33), Value(41), Value("four"), Value(4)},
             {Value("cinco"), Value(56), Value(12), Value("five"), Value(5)}
         };
-        assert(are_equal(exp, act));
+        if(!are_equal(exp, act)) {
+            std::cout << "\033[31mWRONG\033[0m" << std::endl;
+            print_res(act);
+            assert(false);
+        }
         std::cout << "\033[32mOK\033[0m" << std::endl;
 
         delete n3;
@@ -274,6 +300,100 @@ int main(){
 
         LAbstractNode* select1 = new LSelectNode(bt1, {}, 100);
         LAbstractNode* select2 = new LSelectNode(bt2, {}, 100);
+        LAbstractNode* crossp = new LCrossProductNode(select1, select2);
+        LAbstractNode* proj = new LProjectNode(crossp, {"table1.id", "table2.id2", "table2.type2"});
+        LAbstractNode* uniq = new LUniqueNode(proj);
+
+        std::vector<std::vector<Value>> exp = {
+            {Value(0), Value(5), Value("five")},
+            {Value(0), Value(4), Value("four")},
+            {Value(0), Value(3), Value("three")},
+            {Value(0), Value(2), Value("two")},
+            {Value(0), Value(1), Value("one")},
+            {Value(1), Value(5), Value("five")},
+            {Value(1), Value(4), Value("four")},
+            {Value(1), Value(3), Value("three")},
+            {Value(1), Value(2), Value("two")},
+            {Value(1), Value(1), Value("one")},
+            {Value(2), Value(5), Value("five")},
+            {Value(2), Value(4), Value("four")},
+            {Value(2), Value(3), Value("three")},
+            {Value(2), Value(2), Value("two")},
+            {Value(2), Value(1), Value("one")},
+            {Value(3), Value(5), Value("five")},
+            {Value(3), Value(4), Value("four")},
+            {Value(3), Value(3), Value("three")},
+            {Value(3), Value(2), Value("two")},
+            {Value(3), Value(1), Value("one")},
+            {Value(4), Value(5), Value("five")},
+            {Value(4), Value(4), Value("four")},
+            {Value(4), Value(3), Value("three")},
+            {Value(4), Value(2), Value("two")},
+            {Value(4), Value(1), Value("one")},
+            {Value(5), Value(5), Value("five")},
+            {Value(5), Value(4), Value("four")},
+            {Value(5), Value(3), Value("three")},
+            {Value(5), Value(2), Value("two")},
+            {Value(5), Value(1), Value("one")}
+        };
+        test_it_with_fire(uniq,
+            "UNIQUE (SELECT id FROM table1) x (SELECT id2 FROM table2)", exp);
+        delete uniq;
+    }
+
+    {
+        BaseTable bt1 = BaseTable("table1");
+        BaseTable bt2 = BaseTable("table2");
+
+        LAbstractNode* select1 = new LSelectNode(bt1, {}, 1);
+        LAbstractNode* select2 = new LSelectNode(bt2, {}, 1);
+        LAbstractNode* crossp = new LCrossProductNode(select1, select2);
+        LAbstractNode* proj = new LProjectNode(crossp, {"table1.id", "table2.id2", "table2.type2"});
+        LAbstractNode* uniq = new LUniqueNode(proj);
+
+        std::vector<std::vector<Value>> exp = {
+            {Value(0), Value(5), Value("five")},
+            {Value(0), Value(4), Value("four")},
+            {Value(0), Value(3), Value("three")},
+            {Value(0), Value(2), Value("two")},
+            {Value(0), Value(1), Value("one")},
+            {Value(1), Value(5), Value("five")},
+            {Value(1), Value(4), Value("four")},
+            {Value(1), Value(3), Value("three")},
+            {Value(1), Value(2), Value("two")},
+            {Value(1), Value(1), Value("one")},
+            {Value(2), Value(5), Value("five")},
+            {Value(2), Value(4), Value("four")},
+            {Value(2), Value(3), Value("three")},
+            {Value(2), Value(2), Value("two")},
+            {Value(2), Value(1), Value("one")},
+            {Value(3), Value(5), Value("five")},
+            {Value(3), Value(4), Value("four")},
+            {Value(3), Value(3), Value("three")},
+            {Value(3), Value(2), Value("two")},
+            {Value(3), Value(1), Value("one")},
+            {Value(4), Value(5), Value("five")},
+            {Value(4), Value(4), Value("four")},
+            {Value(4), Value(3), Value("three")},
+            {Value(4), Value(2), Value("two")},
+            {Value(4), Value(1), Value("one")},
+            {Value(5), Value(5), Value("five")},
+            {Value(5), Value(4), Value("four")},
+            {Value(5), Value(3), Value("three")},
+            {Value(5), Value(2), Value("two")},
+            {Value(5), Value(1), Value("one")}
+        };
+        test_it_with_fire(uniq,
+            "UNIQUE (SELECT id FROM table1) x (SELECT id2 FROM table2)", exp);
+        delete uniq;
+    }
+
+    {
+        BaseTable bt1 = BaseTable("table1");
+        BaseTable bt2 = BaseTable("table2");
+
+        LAbstractNode* select1 = new LSelectNode(bt1, {}, 4);
+        LAbstractNode* select2 = new LSelectNode(bt2, {}, 4);
         LAbstractNode* crossp = new LCrossProductNode(select1, select2);
         LAbstractNode* proj = new LProjectNode(crossp, {"table1.id", "table2.id2", "table2.type2"});
         LAbstractNode* uniq = new LUniqueNode(proj);
@@ -412,6 +532,30 @@ int main(){
             {Value(0), Value("cero"), Value(100), Value(4)},
             {Value(1), Value("uno"), Value(55), Value(1)},
             {Value(2), Value("dos"), Value(25), Value(2)}
+        };
+
+        test_it_with_fire(u3, "UNION SELECTx4", exp);
+    }
+
+    {
+        BaseTable bt1 = BaseTable("table1");
+        Predicate p1(PT_EQUALS, VT_INT, 0, 3, "");
+        Predicate p2(PT_GREATERTHAN, VT_INT, 0, 3, "");
+        Predicate p3(PT_EQUALS, VT_INT, 0, -1, "");
+        Predicate p4(PT_GREATERTHAN, VT_INT, 0, -1, "");
+        LAbstractNode* n1 = new LSelectNode(bt1, {p1}, 1);
+        LAbstractNode* n2 = new LSelectNode(bt1, {p2}, 2);
+        LAbstractNode* n3 = new LSelectNode(bt1, {p3}, 3);
+        LAbstractNode* n4 = new LSelectNode(bt1, {p4}, 4);
+        LAbstractNode* u1 = new LUnionNode(n1, n3); // right empty
+        LAbstractNode* u2 = new LUnionNode(n4, n2); // left empty
+        LAbstractNode* u3 = new LUnionNode(u1, u2); // both filled
+
+        std::vector<std::vector<Value>> exp = {
+            {Value(3), Value("tres"), Value(23), Value(4)},
+            {Value(2), Value("dos"), Value(25), Value(2)},
+            {Value(1), Value("uno"), Value(55), Value(1)},
+            {Value(0), Value("cero"), Value(100), Value(4)}
         };
 
         test_it_with_fire(u3, "UNION SELECTx4", exp);
